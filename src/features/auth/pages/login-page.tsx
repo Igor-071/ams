@@ -16,13 +16,10 @@ export function LoginPage() {
     <div className="space-y-6">
       <LoginForm />
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/[0.12]" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-card px-2 text-muted-foreground">or</span>
-        </div>
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-white/[0.12]" />
+        <span className="text-xs text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-white/[0.12]" />
       </div>
 
       <SsoButton />

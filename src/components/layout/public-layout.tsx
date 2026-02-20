@@ -10,7 +10,7 @@ export function PublicLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b border-white/[0.12] bg-black/10 backdrop-blur-[51px]">
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-transparent backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             to={ROUTES.MARKETPLACE}
@@ -42,7 +42,7 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-white/[0.12] bg-black/10 backdrop-blur-[51px] py-6">
+      <footer className="sticky bottom-0 z-50 border-t border-white/[0.06] bg-transparent backdrop-blur-xl py-6">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <p className="font-heading text-sm font-light text-muted-foreground">
             {FOOTER_TEXT}

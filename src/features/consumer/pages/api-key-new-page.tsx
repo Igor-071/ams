@@ -177,6 +177,7 @@ export function ApiKeyNewPage() {
                 type="number"
                 min={1}
                 max={365}
+                placeholder="e.g. 30"
                 value={ttlDays}
                 onChange={(e) => setTtlDays(Number(e.target.value))}
                 required

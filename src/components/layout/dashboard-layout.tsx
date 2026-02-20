@@ -32,7 +32,6 @@ import {
 import { Separator } from '@/components/ui/separator.tsx'
 import { UserMenu } from '@/components/shared/user-menu.tsx'
 import { NotificationCenter } from '@/components/shared/notification-center.tsx'
-import { DevPanel } from '@/components/shared/dev-panel.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
 import { FOOTER_TEXT, ROLE_LABELS, ROUTES } from '@/lib/constants.ts'
 import type { Role } from '@/types/user.ts'
@@ -144,7 +143,7 @@ export function DashboardLayout() {
       <DashboardSidebar navItems={navItems} activeRole={currentUser.activeRole} />
 
       <SidebarInset>
-        <header className="flex h-16 items-center gap-2 border-b border-white/[0.12] bg-black/10 backdrop-blur-[51px] px-4">
+        <header className="sticky top-0 z-50 flex h-16 items-center gap-2 border-b border-white/[0.06] bg-transparent backdrop-blur-xl px-4">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-6" />
           <div className="flex items-center gap-2">
@@ -160,11 +159,10 @@ export function DashboardLayout() {
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
-        <footer className="border-t border-white/[0.12] bg-black/10 backdrop-blur-[51px] py-4">
+        <footer className="sticky bottom-0 z-50 border-t border-white/[0.06] bg-transparent backdrop-blur-xl py-4">
           <p className="text-center font-heading text-sm font-light text-muted-foreground">
             {FOOTER_TEXT}
           </p>
-          <DevPanel />
         </footer>
       </SidebarInset>
     </SidebarProvider>

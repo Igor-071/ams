@@ -168,6 +168,7 @@ export function MerchantServiceNewPage() {
                       type="number"
                       step="0.001"
                       min="0"
+                      placeholder="0.001"
                       value={pricePerRequest}
                       onChange={(e) => setPricePerRequest(e.target.value)}
                     />
@@ -180,6 +181,7 @@ export function MerchantServiceNewPage() {
                     id="svc-rate"
                     type="number"
                     min="0"
+                    placeholder="e.g. 100"
                     value={rateLimit}
                     onChange={(e) => setRateLimit(e.target.value)}
                   />

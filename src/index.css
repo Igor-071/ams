@@ -161,3 +161,9 @@
     box-shadow: 0 0 20px rgba(0, 102, 255, 0.15);
   }
 }
+
+/* Active input — white bg with black text when focused */
+input[data-slot="input"]:focus {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+}
