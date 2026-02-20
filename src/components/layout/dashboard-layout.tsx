@@ -30,6 +30,8 @@ import {
 } from '@/components/ui/sidebar.tsx'
 import { Separator } from '@/components/ui/separator.tsx'
 import { UserMenu } from '@/components/shared/user-menu.tsx'
+import { NotificationCenter } from '@/components/shared/notification-center.tsx'
+import { DevPanel } from '@/components/shared/dev-panel.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
 import { APP_NAME, FOOTER_TEXT, ROLE_LABELS, ROUTES } from '@/lib/constants.ts'
 import type { Role } from '@/types/user.ts'
@@ -132,6 +134,9 @@ export function DashboardLayout() {
               {ROLE_LABELS[currentUser.activeRole]}
             </span>
           </div>
+          <div className="ml-auto">
+            <NotificationCenter />
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
@@ -140,6 +145,7 @@ export function DashboardLayout() {
           <p className="text-center font-heading text-sm font-light text-muted-foreground">
             {FOOTER_TEXT}
           </p>
+          <DevPanel />
         </footer>
       </SidebarInset>
     </SidebarProvider>

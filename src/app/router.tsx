@@ -6,7 +6,6 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout.tsx'
 import { AuthGuard } from '@/components/layout/auth-guard.tsx'
 import { HomeRedirect } from '@/pages/home-redirect.tsx'
 import { NotFoundPage } from '@/pages/not-found.tsx'
-import { PlaceholderPage } from '@/pages/placeholder.tsx'
 import { LoginPage } from '@/features/auth/pages/login-page.tsx'
 import { RegisterPage } from '@/features/auth/pages/register-page.tsx'
 import { MerchantRegisterPage } from '@/features/auth/pages/merchant-register-page.tsx'
@@ -20,6 +19,8 @@ import { UsagePage } from '@/features/consumer/pages/usage-page.tsx'
 import { ImagesPage } from '@/features/consumer/pages/images-page.tsx'
 import { ProjectsPage } from '@/features/consumer/pages/projects-page.tsx'
 import { ProjectDetailPage } from '@/features/consumer/pages/project-detail-page.tsx'
+import { ConsumerServicesPage } from '@/features/consumer/pages/consumer-services-page.tsx'
+import { ConsumerServiceDetailPage } from '@/features/consumer/pages/consumer-service-detail-page.tsx'
 import { MerchantDashboardPage } from '@/features/merchant/pages/merchant-dashboard-page.tsx'
 import { MerchantServicesPage } from '@/features/merchant/pages/merchant-services-page.tsx'
 import { MerchantServiceNewPage } from '@/features/merchant/pages/merchant-service-new-page.tsx'
@@ -76,8 +77,8 @@ export const router = createBrowserRouter([
               { path: 'dashboard/api-keys/new', element: <ApiKeyNewPage /> },
               { path: 'dashboard/api-keys/:keyId', element: <ApiKeyDetailPage /> },
               { path: 'dashboard/usage', element: <UsagePage /> },
-              { path: 'dashboard/services', element: <PlaceholderPage /> },
-              { path: 'dashboard/services/:serviceId', element: <PlaceholderPage /> },
+              { path: 'dashboard/services', element: <ConsumerServicesPage /> },
+              { path: 'dashboard/services/:serviceId', element: <ConsumerServiceDetailPage /> },
               { path: 'dashboard/images', element: <ImagesPage /> },
               { path: 'dashboard/projects', element: <ProjectsPage /> },
               { path: 'dashboard/projects/:projectId', element: <ProjectDetailPage /> },

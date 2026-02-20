@@ -5,6 +5,7 @@ import type { ApiKey } from '@/types/api-key.ts'
 import type { UsageRecord, DailyUsage } from '@/types/usage.ts'
 import type { Invoice } from '@/types/invoice.ts'
 import type { AuditLog, AuditAction } from '@/types/audit.ts'
+import type { ConsumptionResponse, ValidationResult } from '@/types/consumption.ts'
 import { mockUsers, mockMerchantProfiles, mockConsumerProfiles } from './data/users.ts'
 import { mockServices, mockAccessRequests } from './data/services.ts'
 import { mockApiKeys } from './data/api-keys.ts'
@@ -16,6 +17,11 @@ import { mockProjects } from './data/projects.ts'
 import type { DockerImage } from '@/types/docker.ts'
 import type { Project } from '@/types/project.ts'
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants.ts'
+
+let idCounter = 0
+function uniqueId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${idCounter++}`
+}
 
 // Valid unused invite codes for merchant registration
 const validInviteCodes = new Set(['INV-NEW-2025', 'INV-TEST-2025', 'INV-DEMO-2025'])
@@ -378,7 +384,7 @@ export function createService(data: {
   tags?: string[]
 }): Service {
   const service: Service = {
-    id: `svc-${Date.now()}`,
+    id: uniqueId('svc'),
     merchantId: data.merchantId,
     merchantName: data.merchantName,
     name: data.name,
@@ -520,6 +526,95 @@ export function createMerchantInvite(email: string): { code: string; link: strin
   validInviteCodes.add(code)
   addAuditLog('merchant.invited', 'user-admin-1', 'Sarah Admin', email, 'merchant', `Invited ${email} as merchant`)
   return { code, link: `/register/merchant?code=${code}` }
+}
+
+// Consumption Endpoint Simulation
+export function simulateConsumption(apiKeyValue: string, serviceId: string): ConsumptionResponse {
+  const results: ValidationResult[] = []
+
+  // Step 1: API Key Validation
+  const key = mockApiKeys.find((k) => k.keyValue === apiKeyValue)
+  if (!key) {
+    results.push({ step: 'api_key_validation', passed: false, errorCode: 401, errorMessage: 'Invalid API key' })
+    return { success: false, statusCode: 401, validationResults: results, errorMessage: 'Invalid API key' }
+  }
+  results.push({ step: 'api_key_validation', passed: true })
+
+  // Step 2: TTL Check
+  if (key.status === 'expired' || key.status === 'revoked') {
+    results.push({ step: 'ttl_check', passed: false, errorCode: 403, errorMessage: key.status === 'expired' ? 'API key expired' : 'API key revoked' })
+    return { success: false, statusCode: 403, validationResults: results, errorMessage: `API key ${key.status}` }
+  }
+  results.push({ step: 'ttl_check', passed: true })
+
+  // Step 3: Service Authorization
+  if (!key.serviceIds.includes(serviceId)) {
+    results.push({ step: 'service_authorization', passed: false, errorCode: 403, errorMessage: 'Key not authorized for this service' })
+    return { success: false, statusCode: 403, validationResults: results, errorMessage: 'Key not authorized for this service' }
+  }
+  results.push({ step: 'service_authorization', passed: true })
+
+  // Step 4: Merchant Config Check
+  const service = mockServices.find((s) => s.id === serviceId)
+  if (!service || !service.endpoint) {
+    results.push({ step: 'merchant_config_check', passed: false, errorCode: 502, errorMessage: 'Merchant endpoint not configured' })
+    return { success: false, statusCode: 502, validationResults: results, errorMessage: 'Merchant endpoint not configured' }
+  }
+  results.push({ step: 'merchant_config_check', passed: true })
+
+  // Step 5: Rate Limit Check
+  if (service.rateLimitPerMinute > 0) {
+    const oneMinuteAgo = new Date(Date.now() - 60000).toISOString()
+    const recentUsage = mockUsageRecords.filter(
+      (u) => u.serviceId === serviceId && u.apiKeyId === key.id && u.timestamp > oneMinuteAgo,
+    )
+    if (recentUsage.length >= service.rateLimitPerMinute) {
+      results.push({ step: 'rate_limit_check', passed: false, errorCode: 429, errorMessage: 'Rate limit exceeded' })
+      return { success: false, statusCode: 429, validationResults: results, errorMessage: 'Rate limit exceeded' }
+    }
+  }
+  results.push({ step: 'rate_limit_check', passed: true })
+
+  // All passed — create usage record
+  const responseTimeMs = Math.floor(Math.random() * 200) + 20
+  const usageRecord: UsageRecord = {
+    id: `usage-${Date.now()}`,
+    consumerId: key.consumerId,
+    apiKeyId: key.id,
+    serviceId,
+    timestamp: new Date().toISOString(),
+    requestPayloadSize: 256,
+    responsePayloadSize: 1024,
+    responseTimeMs,
+    statusCode: 200,
+  }
+  mockUsageRecords.push(usageRecord)
+
+  return { success: true, statusCode: 200, validationResults: results, responseTimeMs }
+}
+
+// Consumer — Services with approved access
+export function getConsumerApprovedServices(consumerId: string): Service[] {
+  const approvedServiceIds = mockAccessRequests
+    .filter((r) => r.consumerId === consumerId && r.status === 'approved')
+    .map((r) => r.serviceId)
+  return mockServices.filter((s) => approvedServiceIds.includes(s.id))
+}
+
+// Consumer — Per-service usage
+export function getConsumerServiceUsage(
+  consumerId: string,
+  serviceId: string,
+): { totalRequests: number; avgResponseTimeMs: number; records: UsageRecord[] } {
+  const records = mockUsageRecords.filter(
+    (u) => u.consumerId === consumerId && u.serviceId === serviceId,
+  )
+  const totalRequests = records.length
+  const avgResponseTimeMs =
+    totalRequests > 0
+      ? Math.round(records.reduce((sum, r) => sum + r.responseTimeMs, 0) / totalRequests)
+      : 0
+  return { totalRequests, avgResponseTimeMs, records }
 }
 
 // Admin — Audit log helper

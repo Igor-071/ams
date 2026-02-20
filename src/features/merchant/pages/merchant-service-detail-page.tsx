@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.t
 import { Badge } from '@/components/ui/badge.tsx'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
 import { ConsumptionEndpointDocs } from '../components/consumption-endpoint-docs.tsx'
+import { ConsumptionSimulator } from '../components/consumption-simulator.tsx'
+import { UsagePipelineViz } from '../components/usage-pipeline-viz.tsx'
 import { getServiceById } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
 
@@ -121,7 +123,13 @@ export function MerchantServiceDetailPage() {
         )}
       </div>
 
-      {service.type === 'api' && <ConsumptionEndpointDocs />}
+      {service.type === 'api' && (
+        <>
+          <ConsumptionSimulator serviceId={service.id} />
+          <UsagePipelineViz />
+          <ConsumptionEndpointDocs />
+        </>
+      )}
     </div>
   )
 }
