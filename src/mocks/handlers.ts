@@ -105,6 +105,34 @@ export function getAccessRequestsByConsumer(
   return mockAccessRequests.filter((r) => r.consumerId === consumerId)
 }
 
+export function getAccessRequestForService(
+  consumerId: string,
+  serviceId: string,
+): AccessRequest | undefined {
+  return mockAccessRequests.find(
+    (r) => r.consumerId === consumerId && r.serviceId === serviceId,
+  )
+}
+
+export function createAccessRequest(data: {
+  consumerId: string
+  consumerName: string
+  serviceId: string
+  serviceName: string
+}): AccessRequest {
+  const request: AccessRequest = {
+    id: `ar-${Date.now()}`,
+    consumerId: data.consumerId,
+    consumerName: data.consumerName,
+    serviceId: data.serviceId,
+    serviceName: data.serviceName,
+    status: 'pending',
+    requestedAt: new Date().toISOString(),
+  }
+  mockAccessRequests.push(request)
+  return request
+}
+
 // API Keys
 export function getApiKeys(params?: FilterParams): PaginatedResponse<ApiKey> {
   let items = [...mockApiKeys]

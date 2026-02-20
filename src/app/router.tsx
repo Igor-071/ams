@@ -10,6 +10,8 @@ import { PlaceholderPage } from '@/pages/placeholder.tsx'
 import { LoginPage } from '@/features/auth/pages/login-page.tsx'
 import { RegisterPage } from '@/features/auth/pages/register-page.tsx'
 import { MerchantRegisterPage } from '@/features/auth/pages/merchant-register-page.tsx'
+import { CatalogPage } from '@/features/marketplace/pages/catalog-page.tsx'
+import { ServiceDetailPage } from '@/features/marketplace/pages/service-detail-page.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -22,8 +24,8 @@ export const router = createBrowserRouter([
       {
         element: <PublicLayout />,
         children: [
-          { path: 'marketplace', element: <PlaceholderPage /> },
-          { path: 'marketplace/:serviceId', element: <PlaceholderPage /> },
+          { path: 'marketplace', element: <CatalogPage /> },
+          { path: 'marketplace/:serviceId', element: <ServiceDetailPage /> },
         ],
       },
 

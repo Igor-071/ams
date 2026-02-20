@@ -1,0 +1,37 @@
+import type { Service } from '@/types/service.ts'
+import { ServiceCard } from './service-card.tsx'
+import { EmptyState } from '@/components/shared/empty-state.tsx'
+import { SearchIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button.tsx'
+
+interface ServiceGridProps {
+  services: Service[]
+  onClearFilters?: () => void
+}
+
+export function ServiceGrid({ services, onClearFilters }: ServiceGridProps) {
+  if (services.length === 0) {
+    return (
+      <EmptyState
+        icon={<SearchIcon className="h-12 w-12" />}
+        title="No services found"
+        description="Try adjusting your search or filters to find what you're looking for."
+        action={
+          onClearFilters ? (
+            <Button variant="outline" size="sm" onClick={onClearFilters}>
+              Clear filters
+            </Button>
+          ) : undefined
+        }
+      />
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {services.map((service) => (
+        <ServiceCard key={service.id} service={service} />
+      ))}
+    </div>
+  )
+}
