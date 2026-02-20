@@ -29,6 +29,14 @@ import { MerchantConsumersPage } from '@/features/merchant/pages/merchant-consum
 import { MerchantInvoicesPage } from '@/features/merchant/pages/merchant-invoices-page.tsx'
 import { MerchantInvoiceDetailPage } from '@/features/merchant/pages/merchant-invoice-detail-page.tsx'
 import { MerchantImagesPage } from '@/features/merchant/pages/merchant-images-page.tsx'
+import { AdminDashboardPage } from '@/features/admin/pages/admin-dashboard-page.tsx'
+import { AdminMerchantsPage } from '@/features/admin/pages/admin-merchants-page.tsx'
+import { AdminMerchantDetailPage } from '@/features/admin/pages/admin-merchant-detail-page.tsx'
+import { AdminConsumersPage } from '@/features/admin/pages/admin-consumers-page.tsx'
+import { AdminConsumerDetailPage } from '@/features/admin/pages/admin-consumer-detail-page.tsx'
+import { AdminServicesPage } from '@/features/admin/pages/admin-services-page.tsx'
+import { AdminServiceDetailPage } from '@/features/admin/pages/admin-service-detail-page.tsx'
+import { AdminGovernancePage } from '@/features/admin/pages/admin-governance-page.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -106,14 +114,14 @@ export const router = createBrowserRouter([
           {
             element: <DashboardLayout />,
             children: [
-              { path: 'admin', element: <PlaceholderPage /> },
-              { path: 'admin/merchants', element: <PlaceholderPage /> },
-              { path: 'admin/merchants/:merchantId', element: <PlaceholderPage /> },
-              { path: 'admin/consumers', element: <PlaceholderPage /> },
-              { path: 'admin/consumers/:consumerId', element: <PlaceholderPage /> },
-              { path: 'admin/services', element: <PlaceholderPage /> },
-              { path: 'admin/services/:serviceId', element: <PlaceholderPage /> },
-              { path: 'admin/governance', element: <PlaceholderPage /> },
+              { path: 'admin', element: <AdminDashboardPage /> },
+              { path: 'admin/merchants', element: <AdminMerchantsPage /> },
+              { path: 'admin/merchants/:merchantId', element: <AdminMerchantDetailPage /> },
+              { path: 'admin/consumers', element: <AdminConsumersPage /> },
+              { path: 'admin/consumers/:consumerId', element: <AdminConsumerDetailPage /> },
+              { path: 'admin/services', element: <AdminServicesPage /> },
+              { path: 'admin/services/:serviceId', element: <AdminServiceDetailPage /> },
+              { path: 'admin/governance', element: <AdminGovernancePage /> },
             ],
           },
         ],

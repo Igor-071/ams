@@ -1,11 +1,11 @@
 import type { FilterParams, PaginatedResponse } from '@/types/common.ts'
-import type { User, MerchantProfile } from '@/types/user.ts'
+import type { User, MerchantProfile, ConsumerProfile } from '@/types/user.ts'
 import type { Service, AccessRequest } from '@/types/service.ts'
 import type { ApiKey } from '@/types/api-key.ts'
 import type { UsageRecord, DailyUsage } from '@/types/usage.ts'
 import type { Invoice } from '@/types/invoice.ts'
-import type { AuditLog } from '@/types/audit.ts'
-import { mockUsers, mockMerchantProfiles } from './data/users.ts'
+import type { AuditLog, AuditAction } from '@/types/audit.ts'
+import { mockUsers, mockMerchantProfiles, mockConsumerProfiles } from './data/users.ts'
 import { mockServices, mockAccessRequests } from './data/services.ts'
 import { mockApiKeys } from './data/api-keys.ts'
 import { mockUsageRecords, mockDailyUsage } from './data/usage.ts'
@@ -421,5 +421,125 @@ export function getUsageByApiKeyForService(
       status: key.status,
       requestCount: usage.length,
     }
+  })
+}
+
+// Admin — Profiles
+export function getMerchantProfile(userId: string): MerchantProfile | undefined {
+  return mockMerchantProfiles.find((p) => p.userId === userId)
+}
+
+export function getConsumerProfile(userId: string): ConsumerProfile | undefined {
+  return mockConsumerProfiles.find((p) => p.userId === userId)
+}
+
+// Admin — Merchant management
+export function suspendMerchant(userId: string): User | undefined {
+  const user = mockUsers.find((u) => u.id === userId)
+  if (!user || user.status !== 'active') return undefined
+  user.status = 'suspended'
+  addAuditLog('merchant.suspended', 'user-admin-1', 'Sarah Admin', userId, 'merchant', `Suspended merchant ${user.name}`)
+  return user
+}
+
+export function unsuspendMerchant(userId: string): User | undefined {
+  const user = mockUsers.find((u) => u.id === userId)
+  if (!user || user.status !== 'suspended') return undefined
+  user.status = 'active'
+  addAuditLog('merchant.unsuspended', 'user-admin-1', 'Sarah Admin', userId, 'merchant', `Unsuspended merchant ${user.name}`)
+  return user
+}
+
+// Admin — Consumer management
+export function blockConsumer(userId: string): User | undefined {
+  const user = mockUsers.find((u) => u.id === userId)
+  if (!user || user.status !== 'active') return undefined
+  user.status = 'blocked'
+  // Revoke all active API keys
+  const keys = mockApiKeys.filter((k) => k.consumerId === userId && k.status === 'active')
+  for (const key of keys) {
+    key.status = 'revoked'
+    key.revokedAt = new Date().toISOString()
+    key.revokedBy = 'consumer'
+  }
+  addAuditLog('consumer.blocked', 'user-admin-1', 'Sarah Admin', userId, 'consumer', `Blocked consumer ${user.name}`)
+  return user
+}
+
+export function unblockConsumer(userId: string): User | undefined {
+  const user = mockUsers.find((u) => u.id === userId)
+  if (!user || user.status !== 'blocked') return undefined
+  user.status = 'active'
+  addAuditLog('consumer.unblocked', 'user-admin-1', 'Sarah Admin', userId, 'consumer', `Unblocked consumer ${user.name}`)
+  return user
+}
+
+// Admin — Service approval
+export function approveService(serviceId: string): Service | undefined {
+  const service = mockServices.find((s) => s.id === serviceId)
+  if (!service || service.status !== 'pending_approval') return undefined
+  service.status = 'active'
+  service.updatedAt = new Date().toISOString()
+  addAuditLog('service.approved', 'user-admin-1', 'Sarah Admin', serviceId, 'service', `Approved service ${service.name}`)
+  return service
+}
+
+export function rejectService(serviceId: string): Service | undefined {
+  const service = mockServices.find((s) => s.id === serviceId)
+  if (!service || service.status !== 'pending_approval') return undefined
+  service.status = 'rejected'
+  service.updatedAt = new Date().toISOString()
+  addAuditLog('service.rejected', 'user-admin-1', 'Sarah Admin', serviceId, 'service', `Rejected service ${service.name}`)
+  return service
+}
+
+// Admin — Access request approval
+export function approveAccessRequest(requestId: string): AccessRequest | undefined {
+  const request = mockAccessRequests.find((r) => r.id === requestId)
+  if (!request || request.status !== 'pending') return undefined
+  request.status = 'approved'
+  request.resolvedAt = new Date().toISOString()
+  request.resolvedBy = 'user-admin-1'
+  addAuditLog('access.approved', 'user-admin-1', 'Sarah Admin', requestId, 'access_request', `Approved access to ${request.serviceName}`)
+  return request
+}
+
+export function denyAccessRequest(requestId: string): AccessRequest | undefined {
+  const request = mockAccessRequests.find((r) => r.id === requestId)
+  if (!request || request.status !== 'pending') return undefined
+  request.status = 'denied'
+  request.resolvedAt = new Date().toISOString()
+  request.resolvedBy = 'user-admin-1'
+  addAuditLog('access.denied', 'user-admin-1', 'Sarah Admin', requestId, 'access_request', `Denied access to ${request.serviceName}`)
+  return request
+}
+
+// Admin — Merchant invite
+export function createMerchantInvite(email: string): { code: string; link: string } {
+  const code = `INV-${Date.now()}`
+  validInviteCodes.add(code)
+  addAuditLog('merchant.invited', 'user-admin-1', 'Sarah Admin', email, 'merchant', `Invited ${email} as merchant`)
+  return { code, link: `/register/merchant?code=${code}` }
+}
+
+// Admin — Audit log helper
+function addAuditLog(
+  action: AuditAction,
+  actorId: string,
+  actorName: string,
+  targetId: string,
+  targetType: AuditLog['targetType'],
+  description: string,
+): void {
+  mockAuditLogs.push({
+    id: `audit-${Date.now()}`,
+    action,
+    actorId,
+    actorName,
+    actorRole: 'admin',
+    targetId,
+    targetType,
+    description,
+    timestamp: new Date().toISOString(),
   })
 }
