@@ -11,7 +11,7 @@ export function DevPanel() {
   }
 
   return (
-    <div className="border-t border-white/[0.06]">
+    <div className="border-t border-white/[0.12]">
       <button
         className="flex w-full items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground"
         onClick={() => setOpen(!open)}
@@ -26,7 +26,7 @@ export function DevPanel() {
         )}
       </button>
       {open && (
-        <div className="border-t border-white/[0.06] px-4 py-3">
+        <div className="border-t border-white/[0.12] px-4 py-3">
           <Button
             variant="outline"
             size="sm"

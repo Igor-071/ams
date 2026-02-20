@@ -101,7 +101,7 @@ export function ConsumptionSimulator({ serviceId }: ConsumptionSimulatorProps) {
                 return (
                   <div
                     key={step}
-                    className="flex items-center justify-between rounded-lg border border-white/[0.06] px-3 py-2"
+                    className="flex items-center justify-between rounded-lg border border-white/[0.12] px-3 py-2"
                   >
                     <div className="flex items-center gap-2">
                       {status === 'passed' && (
@@ -135,7 +135,7 @@ export function ConsumptionSimulator({ serviceId }: ConsumptionSimulatorProps) {
               })}
             </div>
 
-            <div className="rounded-lg border border-white/[0.06] p-3">
+            <div className="rounded-lg border border-white/[0.12] p-3">
               {result.success ? (
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-green-400">

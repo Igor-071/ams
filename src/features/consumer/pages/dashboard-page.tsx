@@ -84,7 +84,7 @@ export function DashboardPage() {
                 {recentActivity.map((entry) => (
                   <div
                     key={entry.id}
-                    className="flex items-center justify-between rounded-lg border border-white/[0.06] p-3"
+                    className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3"
                   >
                     <div>
                       <p className="text-sm font-medium text-foreground">

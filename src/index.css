@@ -72,11 +72,11 @@
   --radius: 0.625rem;
 
   /* Surfaces */
-  --background: #0B0F1A;
+  --background: #000000;
   --foreground: #E0E4F0;
-  --card: #141827;
+  --card: #000000;
   --card-foreground: #E0E4F0;
-  --popover: #1A1F33;
+  --popover: #141827;
   --popover-foreground: #E0E4F0;
 
   /* Brand */
@@ -84,15 +84,15 @@
   --primary-foreground: #FFFFFF;
 
   /* Secondary surfaces */
-  --secondary: #1A1F33;
+  --secondary: #1A1F2E;
   --secondary-foreground: #E0E4F0;
 
   /* Muted / subtle */
-  --muted: #1A1F33;
+  --muted: #1A1F2E;
   --muted-foreground: #7B83A0;
 
   /* Accent (hover/focus) */
-  --accent: #1E2440;
+  --accent: #1E2333;
   --accent-foreground: #E0E4F0;
 
   /* Danger */
@@ -111,11 +111,11 @@
   --chart-5: #BFDBFE;
 
   /* Sidebar */
-  --sidebar: #0F1322;
+  --sidebar: #000000;
   --sidebar-foreground: #E0E4F0;
   --sidebar-primary: #0066FF;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1A1F33;
+  --sidebar-accent: #1E2333;
   --sidebar-accent-foreground: #E0E4F0;
   --sidebar-border: #252B40;
   --sidebar-ring: #0066FF;
@@ -129,6 +129,11 @@
     @apply bg-background text-foreground font-body;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-image: url('/bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 }
 

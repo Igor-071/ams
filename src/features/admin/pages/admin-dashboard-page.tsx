@@ -64,7 +64,7 @@ export function AdminDashboardPage() {
                 <Link
                   key={svc.id}
                   to={ROUTES.ADMIN_SERVICE_DETAIL(svc.id)}
-                  className="flex items-center justify-between rounded-lg border border-white/[0.06] p-3 transition-colors hover:bg-white/[0.03]"
+                  className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3 transition-colors hover:bg-white/[0.03]"
                 >
                   <div>
                     <p className="text-sm font-medium text-foreground">{svc.name}</p>
@@ -79,7 +79,7 @@ export function AdminDashboardPage() {
                 <Link
                   key={req.id}
                   to={ROUTES.ADMIN_CONSUMER_DETAIL(req.consumerId)}
-                  className="flex items-center justify-between rounded-lg border border-white/[0.06] p-3 transition-colors hover:bg-white/[0.03]"
+                  className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3 transition-colors hover:bg-white/[0.03]"
                 >
                   <div>
                     <p className="text-sm font-medium text-foreground">{req.serviceName}</p>

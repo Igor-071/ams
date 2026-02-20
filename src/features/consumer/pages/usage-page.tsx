@@ -114,7 +114,7 @@ export function UsagePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-2xl border border-white/[0.06]">
+          <div className="rounded-2xl border border-white/[0.12]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -155,7 +155,7 @@ export function UsagePage() {
           {byService.length === 0 ? (
             <p className="text-sm text-muted-foreground">No usage data</p>
           ) : (
-            <div className="rounded-2xl border border-white/[0.06]">
+            <div className="rounded-2xl border border-white/[0.12]">
               <Table>
                 <TableHeader>
                   <TableRow>

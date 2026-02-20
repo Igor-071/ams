@@ -65,7 +65,7 @@ export function UserMenu() {
       <DropdownMenuContent
         side="top"
         align="start"
-        className="w-56 rounded-2xl border-white/[0.06] bg-card shadow-card"
+        className="w-56 rounded-2xl border-white/[0.12] bg-card shadow-card"
       >
         <DropdownMenuLabel className="font-normal">
           <div className="flex items-center gap-2">

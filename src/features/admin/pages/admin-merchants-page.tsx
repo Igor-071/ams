@@ -73,7 +73,7 @@ export function AdminMerchantsPage() {
         }
       />
 
-      <div className="rounded-2xl border border-white/[0.06]">
+      <div className="rounded-2xl border border-white/[0.12]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -137,14 +137,14 @@ export function AdminMerchantsPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Invite Code</p>
-                <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-background/50 p-3">
+                <div className="flex items-center gap-2 rounded-lg border border-white/[0.12] bg-background/50 p-3">
                   <code className="flex-1 text-sm text-foreground">{inviteResult.code}</code>
                   <CopyButton value={inviteResult.code} />
                 </div>
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Registration Link</p>
-                <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-background/50 p-3">
+                <div className="flex items-center gap-2 rounded-lg border border-white/[0.12] bg-background/50 p-3">
                   <code className="flex-1 break-all text-sm text-foreground">{inviteResult.link}</code>
                   <CopyButton value={inviteResult.link} />
                 </div>

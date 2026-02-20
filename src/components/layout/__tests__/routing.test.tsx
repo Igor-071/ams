@@ -57,7 +57,7 @@ describe('Routing & Layouts', () => {
       { initialRoute: '/login' },
     )
     await waitFor(() => {
-      expect(screen.getByText('AMS')).toBeInTheDocument()
+      expect(screen.getByRole('img', { name: 'Ahoy' })).toBeInTheDocument()
       expect(screen.getByText('Login form')).toBeInTheDocument()
     })
   })

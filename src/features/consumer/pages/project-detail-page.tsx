@@ -61,7 +61,7 @@ export function ProjectDetailPage() {
               {project.members.map((member) => (
                 <div
                   key={member.userId}
-                  className="flex items-center justify-between rounded-lg border border-white/[0.06] p-3"
+                  className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3"
                 >
                   <div>
                     <p className="text-sm font-medium text-foreground">
@@ -97,7 +97,7 @@ export function ProjectDetailPage() {
                   {services.map((service) => (
                     <div
                       key={service.id}
-                      className="rounded-lg border border-white/[0.06] p-3"
+                      className="rounded-lg border border-white/[0.12] p-3"
                     >
                       <p className="text-sm text-foreground">{service.name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -125,7 +125,7 @@ export function ProjectDetailPage() {
                   {apiKeys.map((key) => (
                     <div
                       key={key.id}
-                      className="rounded-lg border border-white/[0.06] p-3"
+                      className="rounded-lg border border-white/[0.12] p-3"
                     >
                       <p className="text-sm text-foreground">{key.name}</p>
                       <p className="text-xs text-muted-foreground">

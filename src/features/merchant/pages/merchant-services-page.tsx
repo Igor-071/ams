@@ -46,7 +46,7 @@ export function MerchantServicesPage() {
         }
       />
 
-      <div className="rounded-2xl border border-white/[0.06]">
+      <div className="rounded-2xl border border-white/[0.12]">
         <Table>
           <TableHeader>
             <TableRow>

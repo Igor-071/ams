@@ -112,7 +112,7 @@ export function MerchantInvoiceDetailPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-2xl border border-white/[0.06]">
+          <div className="rounded-2xl border border-white/[0.12]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -152,7 +152,7 @@ export function MerchantInvoiceDetailPage() {
               </span>
               <span className="text-red-400">-${invoice.commission.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between border-t border-white/[0.06] pt-2 font-medium">
+            <div className="flex justify-between border-t border-white/[0.12] pt-2 font-medium">
               <span className="text-foreground">Total (Net)</span>
               <span className="text-foreground">${invoice.total.toFixed(2)}</span>
             </div>

@@ -55,7 +55,7 @@ export function ImagesPage() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-background/50 p-3">
+                <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/[0.12] bg-background/50 p-3">
                   <code className="flex-1 break-all text-sm text-foreground">
                     {image.pullCommand}
                   </code>

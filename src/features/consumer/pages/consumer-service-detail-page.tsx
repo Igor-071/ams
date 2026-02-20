@@ -80,7 +80,7 @@ export function ConsumerServiceDetailPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/[0.06] text-left text-muted-foreground">
+                  <tr className="border-b border-white/[0.12] text-left text-muted-foreground">
                     <th className="pb-3 font-medium">Timestamp</th>
                     <th className="pb-3 font-medium">Response Time</th>
                     <th className="pb-3 font-medium">Status</th>
@@ -90,7 +90,7 @@ export function ConsumerServiceDetailPage() {
                   {usage.records.map((record) => (
                     <tr
                       key={record.id}
-                      className="border-b border-white/[0.06] last:border-0"
+                      className="border-b border-white/[0.12] last:border-0"
                     >
                       <td className="py-3 text-foreground">
                         {new Date(record.timestamp).toLocaleString()}

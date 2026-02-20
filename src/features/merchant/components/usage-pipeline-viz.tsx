@@ -29,7 +29,7 @@ export function UsagePipelineViz() {
         <div className="flex flex-wrap items-center gap-2">
           {PIPELINE_STEPS.map((step, index) => (
             <div key={step.label} className="flex items-center gap-2">
-              <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-3 py-2">
+              <div className="flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2">
                 <step.icon className="h-4 w-4 text-primary" />
                 <span className="text-sm text-foreground">{step.label}</span>
               </div>

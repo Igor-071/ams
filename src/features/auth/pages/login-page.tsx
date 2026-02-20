@@ -18,7 +18,7 @@ export function LoginPage() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/[0.06]" />
+          <div className="w-full border-t border-white/[0.12]" />
         </div>
         <div className="relative flex justify-center text-xs">
           <span className="bg-card px-2 text-muted-foreground">or</span>

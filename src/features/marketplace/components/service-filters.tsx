@@ -32,7 +32,7 @@ export function ServiceFilters({
         placeholder="Search services..."
         className="flex-1"
       />
-      <div className="flex gap-1 rounded-full border border-white/[0.06] p-1" role="group" aria-label="Filter by type">
+      <div className="flex gap-1 rounded-full border border-white/[0.12] p-1" role="group" aria-label="Filter by type">
         {typeOptions.map((opt) => (
           <Button
             key={opt.value}

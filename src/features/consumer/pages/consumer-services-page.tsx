@@ -50,7 +50,7 @@ export function ConsumerServicesPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/[0.06] text-left text-muted-foreground">
+                  <tr className="border-b border-white/[0.12] text-left text-muted-foreground">
                     <th className="pb-3 font-medium">Service</th>
                     <th className="pb-3 font-medium">Merchant</th>
                     <th className="pb-3 font-medium">Type</th>
@@ -62,7 +62,7 @@ export function ConsumerServicesPage() {
                   {services.map((svc) => (
                     <tr
                       key={svc.id}
-                      className="border-b border-white/[0.06] last:border-0"
+                      className="border-b border-white/[0.12] last:border-0"
                     >
                       <td className="py-3 font-medium text-foreground">
                         {svc.name}

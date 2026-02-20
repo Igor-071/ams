@@ -1,7 +1,7 @@
 import { Link, Outlet } from 'react-router'
 import { ArrowUpRightIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
-import { ROUTES, APP_NAME, FOOTER_TEXT } from '@/lib/constants.ts'
+import { ROUTES, FOOTER_TEXT } from '@/lib/constants.ts'
 import { useAuthStore } from '@/stores/auth-store.ts'
 import { ROLE_HOME } from '@/lib/constants.ts'
 
@@ -9,14 +9,14 @@ export function PublicLayout() {
   const currentUser = useAuthStore((s) => s.currentUser)
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="border-b border-white/[0.06] bg-background/80 backdrop-blur-md">
+    <div className="flex min-h-screen flex-col">
+      <header className="border-b border-white/[0.12] bg-black/10 backdrop-blur-[51px]">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             to={ROUTES.MARKETPLACE}
-            className="font-heading text-xl font-light text-foreground"
+            className="flex items-center gap-2 font-heading text-xl font-light text-foreground"
           >
-            {APP_NAME}
+            <img src="/ahoy-logo.png" alt="Ahoy" className="h-8 w-auto" />
           </Link>
           <nav>
             {currentUser ? (
@@ -42,7 +42,7 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-white/[0.06] py-6">
+      <footer className="border-t border-white/[0.12] bg-black/10 backdrop-blur-[51px] py-6">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <p className="font-heading text-sm font-light text-muted-foreground">
             {FOOTER_TEXT}

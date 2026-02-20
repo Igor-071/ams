@@ -132,7 +132,7 @@ export function ApiKeyDetailPage() {
                 {services.map((service) => (
                   <div
                     key={service.id}
-                    className="flex items-center justify-between rounded-lg border border-white/[0.06] p-3"
+                    className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3"
                   >
                     <span className="text-sm text-foreground">{service.name}</span>
                     <StatusBadge status={service.status} />

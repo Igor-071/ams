@@ -72,7 +72,7 @@ export function ApiKeyNewPage() {
               <span className="font-heading font-light">API Key Created Successfully</span>
             </div>
 
-            <div className="rounded-lg border border-white/[0.06] bg-background/50 p-4">
+            <div className="rounded-lg border border-white/[0.12] bg-background/50 p-4">
               <div className="flex items-center justify-between gap-2">
                 <code className="break-all text-sm text-foreground">
                   {generatedKey}
@@ -155,7 +155,7 @@ export function ApiKeyNewPage() {
                   {approvedServices.map((service) => (
                     <label
                       key={service.id}
-                      className="flex items-center gap-2 rounded-lg border border-white/[0.06] p-3 cursor-pointer hover:bg-white/[0.02]"
+                      className="flex items-center gap-2 rounded-lg border border-white/[0.12] p-3 cursor-pointer hover:bg-white/[0.02]"
                     >
                       <input
                         type="checkbox"

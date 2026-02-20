@@ -11,7 +11,7 @@ interface LoadingSkeletonProps {
 
 function CardSkeleton() {
   return (
-    <div className="rounded-2xl border border-white/[0.06] p-6">
+    <div className="rounded-2xl border border-white/[0.12] p-6">
       <Skeleton className="mb-2 h-4 w-24" />
       <Skeleton className="mb-4 h-8 w-32" />
       <Skeleton className="h-3 w-full" />
