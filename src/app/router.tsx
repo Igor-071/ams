@@ -12,6 +12,14 @@ import { RegisterPage } from '@/features/auth/pages/register-page.tsx'
 import { MerchantRegisterPage } from '@/features/auth/pages/merchant-register-page.tsx'
 import { CatalogPage } from '@/features/marketplace/pages/catalog-page.tsx'
 import { ServiceDetailPage } from '@/features/marketplace/pages/service-detail-page.tsx'
+import { DashboardPage } from '@/features/consumer/pages/dashboard-page.tsx'
+import { ApiKeysPage } from '@/features/consumer/pages/api-keys-page.tsx'
+import { ApiKeyNewPage } from '@/features/consumer/pages/api-key-new-page.tsx'
+import { ApiKeyDetailPage } from '@/features/consumer/pages/api-key-detail-page.tsx'
+import { UsagePage } from '@/features/consumer/pages/usage-page.tsx'
+import { ImagesPage } from '@/features/consumer/pages/images-page.tsx'
+import { ProjectsPage } from '@/features/consumer/pages/projects-page.tsx'
+import { ProjectDetailPage } from '@/features/consumer/pages/project-detail-page.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -46,16 +54,16 @@ export const router = createBrowserRouter([
           {
             element: <DashboardLayout />,
             children: [
-              { path: 'dashboard', element: <PlaceholderPage /> },
-              { path: 'dashboard/api-keys', element: <PlaceholderPage /> },
-              { path: 'dashboard/api-keys/new', element: <PlaceholderPage /> },
-              { path: 'dashboard/api-keys/:keyId', element: <PlaceholderPage /> },
-              { path: 'dashboard/usage', element: <PlaceholderPage /> },
+              { path: 'dashboard', element: <DashboardPage /> },
+              { path: 'dashboard/api-keys', element: <ApiKeysPage /> },
+              { path: 'dashboard/api-keys/new', element: <ApiKeyNewPage /> },
+              { path: 'dashboard/api-keys/:keyId', element: <ApiKeyDetailPage /> },
+              { path: 'dashboard/usage', element: <UsagePage /> },
               { path: 'dashboard/services', element: <PlaceholderPage /> },
               { path: 'dashboard/services/:serviceId', element: <PlaceholderPage /> },
-              { path: 'dashboard/images', element: <PlaceholderPage /> },
-              { path: 'dashboard/projects', element: <PlaceholderPage /> },
-              { path: 'dashboard/projects/:projectId', element: <PlaceholderPage /> },
+              { path: 'dashboard/images', element: <ImagesPage /> },
+              { path: 'dashboard/projects', element: <ProjectsPage /> },
+              { path: 'dashboard/projects/:projectId', element: <ProjectDetailPage /> },
             ],
           },
         ],

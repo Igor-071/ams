@@ -11,6 +11,10 @@ import { mockApiKeys } from './data/api-keys.ts'
 import { mockUsageRecords, mockDailyUsage } from './data/usage.ts'
 import { mockInvoices } from './data/invoices.ts'
 import { mockAuditLogs } from './data/audit-logs.ts'
+import { mockDockerImages } from './data/docker-images.ts'
+import { mockProjects } from './data/projects.ts'
+import type { DockerImage } from '@/types/docker.ts'
+import type { Project } from '@/types/project.ts'
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants.ts'
 
 // Valid unused invite codes for merchant registration
@@ -262,4 +266,96 @@ export function createMerchantUser(data: {
 
   validInviteCodes.delete(data.inviteCode)
   return user
+}
+
+// API Key CRUD
+export function createApiKey(data: {
+  consumerId: string
+  name: string
+  description?: string
+  serviceIds: string[]
+  ttlDays: number
+}): ApiKey {
+  const now = new Date()
+  const expires = new Date(now)
+  expires.setDate(expires.getDate() + data.ttlDays)
+  const id = `key-${Date.now()}`
+  const keyValue = `ams_live_${id.replace('key-', '')}${'x'.repeat(30)}`
+  const key: ApiKey = {
+    id,
+    consumerId: data.consumerId,
+    name: data.name,
+    description: data.description,
+    keyValue,
+    keyPrefix: 'ams_live',
+    serviceIds: data.serviceIds,
+    status: 'active',
+    ttlDays: data.ttlDays,
+    expiresAt: expires.toISOString(),
+    createdAt: now.toISOString(),
+  }
+  mockApiKeys.push(key)
+  return key
+}
+
+export function revokeApiKey(keyId: string): ApiKey | undefined {
+  const key = mockApiKeys.find((k) => k.id === keyId)
+  if (!key || key.status !== 'active') return undefined
+  key.status = 'revoked'
+  key.revokedAt = new Date().toISOString()
+  key.revokedBy = 'consumer'
+  return key
+}
+
+// Docker Images
+export function getDockerImagesByService(serviceId: string): DockerImage[] {
+  return mockDockerImages.filter((img) => img.serviceId === serviceId)
+}
+
+export function getDockerImagesForConsumer(consumerId: string): DockerImage[] {
+  const approvedServiceIds = mockAccessRequests
+    .filter((r) => r.consumerId === consumerId && r.status === 'approved')
+    .map((r) => r.serviceId)
+  const dockerServiceIds = mockServices
+    .filter((s) => s.type === 'docker' && approvedServiceIds.includes(s.id))
+    .map((s) => s.id)
+  return mockDockerImages.filter((img) => dockerServiceIds.includes(img.serviceId))
+}
+
+// Projects
+export function getProjectsByConsumer(consumerId: string): Project[] {
+  return mockProjects.filter((p) => p.consumerId === consumerId)
+}
+
+export function getProjectById(id: string): Project | undefined {
+  return mockProjects.find((p) => p.id === id)
+}
+
+export function createProject(data: {
+  consumerId: string
+  consumerName: string
+  consumerEmail: string
+  name: string
+  description?: string
+}): Project {
+  const project: Project = {
+    id: `proj-${Date.now()}`,
+    consumerId: data.consumerId,
+    name: data.name,
+    description: data.description,
+    members: [
+      {
+        userId: data.consumerId,
+        name: data.consumerName,
+        email: data.consumerEmail,
+        role: 'owner',
+        addedAt: new Date().toISOString(),
+      },
+    ],
+    serviceIds: [],
+    apiKeyIds: [],
+    createdAt: new Date().toISOString(),
+  }
+  mockProjects.push(project)
+  return project
 }
