@@ -125,7 +125,7 @@ function DashboardSidebar({ navItems, activeRole }: { navItems: NavItem[]; activ
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className={`transition-all duration-300 ease-in-out ${collapsed ? 'items-center p-2' : 'p-4'}`}>
         <UserMenu />
       </SidebarFooter>
     </Sidebar>
