@@ -1,0 +1,117 @@
+import type { User, MerchantProfile, ConsumerProfile } from '@/types/user.ts'
+
+export const mockUsers: User[] = [
+  {
+    id: 'user-admin-1',
+    email: 'admin@ams.io',
+    name: 'Sarah Admin',
+    roles: ['admin'],
+    activeRole: 'admin',
+    status: 'active',
+    createdAt: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: 'user-merchant-1',
+    email: 'merchant@acme.com',
+    name: 'James Merchant',
+    roles: ['merchant'],
+    activeRole: 'merchant',
+    status: 'active',
+    createdAt: '2025-02-15T00:00:00Z',
+  },
+  {
+    id: 'user-merchant-2',
+    email: 'merchant@dataflow.io',
+    name: 'Maria DataFlow',
+    roles: ['merchant'],
+    activeRole: 'merchant',
+    status: 'active',
+    createdAt: '2025-03-01T00:00:00Z',
+  },
+  {
+    id: 'user-merchant-3',
+    email: 'merchant@suspended.com',
+    name: 'Bob Suspended',
+    roles: ['merchant'],
+    activeRole: 'merchant',
+    status: 'suspended',
+    createdAt: '2025-03-10T00:00:00Z',
+  },
+  {
+    id: 'user-consumer-1',
+    email: 'consumer@startup.io',
+    name: 'Alice Consumer',
+    roles: ['consumer'],
+    activeRole: 'consumer',
+    status: 'active',
+    createdAt: '2025-04-01T00:00:00Z',
+  },
+  {
+    id: 'user-consumer-2',
+    email: 'consumer@bigcorp.com',
+    name: 'Dave Developer',
+    roles: ['consumer'],
+    activeRole: 'consumer',
+    status: 'active',
+    createdAt: '2025-04-15T00:00:00Z',
+  },
+  {
+    id: 'user-consumer-3',
+    email: 'blocked@example.com',
+    name: 'Charlie Blocked',
+    roles: ['consumer'],
+    activeRole: 'consumer',
+    status: 'blocked',
+    createdAt: '2025-05-01T00:00:00Z',
+  },
+  {
+    id: 'user-dual-1',
+    email: 'dual@techco.com',
+    name: 'Eva Dual-Role',
+    roles: ['merchant', 'consumer'],
+    activeRole: 'merchant',
+    status: 'active',
+    createdAt: '2025-03-20T00:00:00Z',
+  },
+]
+
+export const mockMerchantProfiles: MerchantProfile[] = [
+  {
+    userId: 'user-merchant-1',
+    companyName: 'ACME APIs',
+    description: 'Enterprise-grade API solutions',
+    website: 'https://acme-apis.com',
+    inviteCode: 'INV-ACME-2025',
+    invitedAt: '2025-02-01T00:00:00Z',
+  },
+  {
+    userId: 'user-merchant-2',
+    companyName: 'DataFlow Inc',
+    description: 'Real-time data processing APIs',
+    website: 'https://dataflow.io',
+    inviteCode: 'INV-DFLOW-2025',
+    invitedAt: '2025-02-20T00:00:00Z',
+  },
+  {
+    userId: 'user-merchant-3',
+    companyName: 'Suspended Corp',
+    description: 'Previously active merchant',
+    inviteCode: 'INV-SUSP-2025',
+    invitedAt: '2025-03-01T00:00:00Z',
+  },
+  {
+    userId: 'user-dual-1',
+    companyName: 'TechCo Solutions',
+    description: 'Full-stack API marketplace participant',
+    website: 'https://techco.com',
+    inviteCode: 'INV-TECH-2025',
+    invitedAt: '2025-03-10T00:00:00Z',
+  },
+]
+
+export const mockConsumerProfiles: ConsumerProfile[] = [
+  { userId: 'user-consumer-1', organization: 'Startup.io' },
+  { userId: 'user-consumer-2', organization: 'BigCorp Inc' },
+  { userId: 'user-consumer-3', organization: 'Example LLC' },
+  { userId: 'user-dual-1', organization: 'TechCo Solutions' },
+]
