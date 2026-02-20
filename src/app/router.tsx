@@ -20,6 +20,15 @@ import { UsagePage } from '@/features/consumer/pages/usage-page.tsx'
 import { ImagesPage } from '@/features/consumer/pages/images-page.tsx'
 import { ProjectsPage } from '@/features/consumer/pages/projects-page.tsx'
 import { ProjectDetailPage } from '@/features/consumer/pages/project-detail-page.tsx'
+import { MerchantDashboardPage } from '@/features/merchant/pages/merchant-dashboard-page.tsx'
+import { MerchantServicesPage } from '@/features/merchant/pages/merchant-services-page.tsx'
+import { MerchantServiceNewPage } from '@/features/merchant/pages/merchant-service-new-page.tsx'
+import { MerchantServiceDetailPage } from '@/features/merchant/pages/merchant-service-detail-page.tsx'
+import { MerchantServiceConsumersPage } from '@/features/merchant/pages/merchant-service-consumers-page.tsx'
+import { MerchantConsumersPage } from '@/features/merchant/pages/merchant-consumers-page.tsx'
+import { MerchantInvoicesPage } from '@/features/merchant/pages/merchant-invoices-page.tsx'
+import { MerchantInvoiceDetailPage } from '@/features/merchant/pages/merchant-invoice-detail-page.tsx'
+import { MerchantImagesPage } from '@/features/merchant/pages/merchant-images-page.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -76,15 +85,15 @@ export const router = createBrowserRouter([
           {
             element: <DashboardLayout />,
             children: [
-              { path: 'merchant', element: <PlaceholderPage /> },
-              { path: 'merchant/services', element: <PlaceholderPage /> },
-              { path: 'merchant/services/new', element: <PlaceholderPage /> },
-              { path: 'merchant/services/:serviceId', element: <PlaceholderPage /> },
-              { path: 'merchant/services/:serviceId/consumers', element: <PlaceholderPage /> },
-              { path: 'merchant/consumers', element: <PlaceholderPage /> },
-              { path: 'merchant/invoices', element: <PlaceholderPage /> },
-              { path: 'merchant/invoices/:invoiceId', element: <PlaceholderPage /> },
-              { path: 'merchant/images', element: <PlaceholderPage /> },
+              { path: 'merchant', element: <MerchantDashboardPage /> },
+              { path: 'merchant/services', element: <MerchantServicesPage /> },
+              { path: 'merchant/services/new', element: <MerchantServiceNewPage /> },
+              { path: 'merchant/services/:serviceId', element: <MerchantServiceDetailPage /> },
+              { path: 'merchant/services/:serviceId/consumers', element: <MerchantServiceConsumersPage /> },
+              { path: 'merchant/consumers', element: <MerchantConsumersPage /> },
+              { path: 'merchant/invoices', element: <MerchantInvoicesPage /> },
+              { path: 'merchant/invoices/:invoiceId', element: <MerchantInvoiceDetailPage /> },
+              { path: 'merchant/images', element: <MerchantImagesPage /> },
             ],
           },
         ],

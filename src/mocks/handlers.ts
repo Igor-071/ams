@@ -298,13 +298,17 @@ export function createApiKey(data: {
   return key
 }
 
-export function revokeApiKey(keyId: string): ApiKey | undefined {
+export function revokeApiKey(keyId: string, by: 'consumer' | 'merchant' = 'consumer'): ApiKey | undefined {
   const key = mockApiKeys.find((k) => k.id === keyId)
   if (!key || key.status !== 'active') return undefined
   key.status = 'revoked'
   key.revokedAt = new Date().toISOString()
-  key.revokedBy = 'consumer'
+  key.revokedBy = by
   return key
+}
+
+export function getApiKeysForService(serviceId: string): ApiKey[] {
+  return mockApiKeys.filter((k) => k.serviceIds.includes(serviceId))
 }
 
 // Docker Images
@@ -358,4 +362,64 @@ export function createProject(data: {
   }
   mockProjects.push(project)
   return project
+}
+
+// Merchant — Service creation
+export function createService(data: {
+  merchantId: string
+  merchantName: string
+  name: string
+  description: string
+  type: Service['type']
+  category: string
+  pricing: Service['pricing']
+  rateLimitPerMinute?: number
+  endpoint?: Service['endpoint']
+  tags?: string[]
+}): Service {
+  const service: Service = {
+    id: `svc-${Date.now()}`,
+    merchantId: data.merchantId,
+    merchantName: data.merchantName,
+    name: data.name,
+    description: data.description,
+    type: data.type,
+    status: 'pending_approval',
+    category: data.category,
+    pricing: data.pricing,
+    rateLimitPerMinute: data.rateLimitPerMinute ?? 0,
+    endpoint: data.endpoint,
+    tags: data.tags ?? [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+  mockServices.push(service)
+  return service
+}
+
+// Merchant — Docker images
+export function getDockerImagesByMerchant(merchantId: string): DockerImage[] {
+  const merchantServiceIds = mockServices
+    .filter((s) => s.merchantId === merchantId && s.type === 'docker')
+    .map((s) => s.id)
+  return mockDockerImages.filter((img) => merchantServiceIds.includes(img.serviceId))
+}
+
+// Merchant — Consumer usage by API key for a service
+export function getUsageByApiKeyForService(
+  serviceId: string,
+): { apiKeyId: string; keyName: string; keyPrefix: string; status: string; requestCount: number }[] {
+  const keys = getApiKeysForService(serviceId)
+  return keys.map((key) => {
+    const usage = mockUsageRecords.filter(
+      (u) => u.serviceId === serviceId && u.apiKeyId === key.id,
+    )
+    return {
+      apiKeyId: key.id,
+      keyName: key.name,
+      keyPrefix: key.keyPrefix,
+      status: key.status,
+      requestCount: usage.length,
+    }
+  })
 }
