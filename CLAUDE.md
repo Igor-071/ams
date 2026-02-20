@@ -30,29 +30,44 @@ AMS is a centralized service marketplace connecting three user roles:
 - **Quality Gates:** 5 essential gates only
 - **Goal:** Validate ideas, get visual feedback quickly
 
-## Design System — Ahoy Tech Palette
+## Design System — Ahoy Tech Inspired (DARK THEME ONLY)
 
-| Token            | Color   | Name            | Usage     |
-|------------------|---------|-----------------|-----------|
-| Ice White        | #F3F5FF | Primary Light   | 100%      |
-| Deep Blue        | #333E63 | Primary Dark    | 50%       |
-| Brand/Primary    | #0066FF | Neon Blue       | 35%       |
-| Danger           | #FF0005 | Red             | 5%        |
+**RULE: Always dark theme. No light mode. No `.dark` class toggling.**
+**Reference:** https://ahoy.technology/ — see `docs/design-system.md` for full spec.
 
-**Typography:**
-- Headings: `Lexend Deca` (Regular, Light weights)
+### Colors (LOCKED)
+
+| Token            | Color   | Usage          |
+|------------------|---------|----------------|
+| Background       | #0B0F1A | Page bg        |
+| Card             | #141827 | Card surfaces  |
+| Foreground       | #E0E4F0 | Primary text   |
+| Muted Foreground | #7B83A0 | Secondary text |
+| Brand/Primary    | #0066FF | CTAs, links    |
+| Danger           | #FF4444 | Errors         |
+| Border           | #252B40 | Dividers       |
+| Sidebar          | #0F1322 | Sidebar bg     |
+
+### Typography
+
+- Headings: `Lexend Deca` (font-light = 300, font-normal = 400, font-medium = 500)
 - Body: `Inter` (Regular)
-- Text color: `#333E63` (Deep Blue)
+- Buttons: `Lexend Deca` font-light
 
-**Component Styling:**
-- Border radius: ~32px for cards
-- Card shadows: `0px 0.93px 23.2px rgba(255,255,255,0.1)`
-- Backdrop blur: ~54px for glass effects
-- Stroke: `hsla(0, 0%, 100%, 0.50)` inside borders
+### Component Rules
 
-**Footer:**
+- **Buttons:** Pill-shaped (`rounded-full`), primary = solid blue, outline = transparent + white/20 border
+- **Cards:** `rounded-2xl` (20px), `border-white/[0.06]`, `shadow-card`
+- **Badges:** `rounded-full`, status badges use `bg-{color}-500/15 text-{color}-400`
+- **Glass surfaces:** `glass` or `glass-strong` utility classes for blur effects
+- **Borders:** Use `border-white/[0.06]` for subtle borders, NOT `border-border` on layouts
+- **Text:** Use `bg-card` NOT `bg-white`, `text-foreground` NOT `text-deep-blue`
+- **Dialogs:** `bg-card rounded-2xl border-white/[0.06] shadow-card`
+
+### Footer
+
 - Text: "© 2025 Ahoy Tech. All rights reserved."
-- Font: Lexend Deca Regular, 16px, color #333E63
+- Font: Lexend Deca font-light, muted-foreground color
 
 ## Confirmed Product Decisions (LOCKED — do not deviate)
 

@@ -4,17 +4,26 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Ahoy Tech Design System Tokens */
+/* Ahoy Tech Design System Tokens — Dark Theme */
 @theme {
-  --color-ice-white: #F3F5FF;
-  --color-deep-blue: #333E63;
+  /* Brand palette */
+  --color-ice-white: #E0E4F0;
+  --color-deep-blue: #E0E4F0;
   --color-brand: #0066FF;
-  --color-danger: #FF0005;
+  --color-danger: #FF4444;
 
+  /* Glass surfaces */
+  --color-glass: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-strong: rgba(72, 73, 99, 0.5);
+  --color-glass-strong-border: rgba(255, 255, 255, 0.1);
+
+  /* Typography */
   --font-heading: "Lexend Deca", sans-serif;
   --font-body: "Inter", sans-serif;
 
-  --radius-card: 32px;
+  /* Shapes */
+  --radius-card: 20px;
 }
 
 @theme inline {
@@ -58,39 +67,57 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Ahoy Tech Light Theme (default) */
+/* Ahoy Tech Dark Theme (default and only) */
 :root {
   --radius: 0.625rem;
-  --background: #F3F5FF;
-  --foreground: #333E63;
-  --card: #FFFFFF;
-  --card-foreground: #333E63;
-  --popover: #FFFFFF;
-  --popover-foreground: #333E63;
+
+  /* Surfaces */
+  --background: #0B0F1A;
+  --foreground: #E0E4F0;
+  --card: #141827;
+  --card-foreground: #E0E4F0;
+  --popover: #1A1F33;
+  --popover-foreground: #E0E4F0;
+
+  /* Brand */
   --primary: #0066FF;
   --primary-foreground: #FFFFFF;
-  --secondary: #E8ECF9;
-  --secondary-foreground: #333E63;
-  --muted: #E8ECF9;
-  --muted-foreground: #6B7494;
-  --accent: #E8ECF9;
-  --accent-foreground: #333E63;
-  --destructive: #FF0005;
-  --border: #D0D5E8;
-  --input: #D0D5E8;
+
+  /* Secondary surfaces */
+  --secondary: #1A1F33;
+  --secondary-foreground: #E0E4F0;
+
+  /* Muted / subtle */
+  --muted: #1A1F33;
+  --muted-foreground: #7B83A0;
+
+  /* Accent (hover/focus) */
+  --accent: #1E2440;
+  --accent-foreground: #E0E4F0;
+
+  /* Danger */
+  --destructive: #FF4444;
+
+  /* Borders & inputs */
+  --border: #252B40;
+  --input: #252B40;
   --ring: #0066FF;
+
+  /* Charts */
   --chart-1: #0066FF;
-  --chart-2: #333E63;
-  --chart-3: #6B7494;
-  --chart-4: #99A3C0;
-  --chart-5: #D0D5E8;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #333E63;
+  --chart-2: #3B82F6;
+  --chart-3: #60A5FA;
+  --chart-4: #93C5FD;
+  --chart-5: #BFDBFE;
+
+  /* Sidebar */
+  --sidebar: #0F1322;
+  --sidebar-foreground: #E0E4F0;
   --sidebar-primary: #0066FF;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E8ECF9;
-  --sidebar-accent-foreground: #333E63;
-  --sidebar-border: #D0D5E8;
+  --sidebar-accent: #1A1F33;
+  --sidebar-accent-foreground: #E0E4F0;
+  --sidebar-border: #252B40;
   --sidebar-ring: #0066FF;
 }
 
@@ -102,5 +129,30 @@
     @apply bg-background text-foreground font-body;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Ahoy component utilities */
+@layer components {
+  /* Glass card surface */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .glass-strong {
+    background: rgba(72, 73, 99, 0.5);
+    backdrop-filter: blur(7px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Card shadow (Ahoy-style deep blue tinted shadow) */
+  .shadow-card {
+    box-shadow: 0 25px 50px -12px rgba(27, 56, 142, 0.1);
+  }
+
+  /* Brand glow effect */
+  .glow-brand {
+    box-shadow: 0 0 20px rgba(0, 102, 255, 0.15);
   }
 }
