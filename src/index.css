@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Ahoy Tech Design System Tokens */
+@theme {
+  --color-ice-white: #F3F5FF;
+  --color-deep-blue: #333E63;
+  --color-brand: #0066FF;
+  --color-danger: #FF0005;
+
+  --font-heading: "Lexend Deca", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --radius-card: 32px;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Ahoy Tech Light Theme (default) */
+:root {
+  --radius: 0.625rem;
+  --background: #F3F5FF;
+  --foreground: #333E63;
+  --card: #FFFFFF;
+  --card-foreground: #333E63;
+  --popover: #FFFFFF;
+  --popover-foreground: #333E63;
+  --primary: #0066FF;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8ECF9;
+  --secondary-foreground: #333E63;
+  --muted: #E8ECF9;
+  --muted-foreground: #6B7494;
+  --accent: #E8ECF9;
+  --accent-foreground: #333E63;
+  --destructive: #FF0005;
+  --border: #D0D5E8;
+  --input: #D0D5E8;
+  --ring: #0066FF;
+  --chart-1: #0066FF;
+  --chart-2: #333E63;
+  --chart-3: #6B7494;
+  --chart-4: #99A3C0;
+  --chart-5: #D0D5E8;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #333E63;
+  --sidebar-primary: #0066FF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E8ECF9;
+  --sidebar-accent-foreground: #333E63;
+  --sidebar-border: #D0D5E8;
+  --sidebar-ring: #0066FF;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
