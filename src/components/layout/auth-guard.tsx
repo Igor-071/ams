@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router'
 import { useAuthStore } from '@/stores/auth-store.ts'
-import { ROUTES } from '@/lib/constants.ts'
+import { ROLE_HOME, ROUTES } from '@/lib/constants.ts'
 import type { Role } from '@/types/user.ts'
 
 interface AuthGuardProps {
@@ -15,7 +15,7 @@ export function AuthGuard({ allowedRoles }: AuthGuardProps) {
   }
 
   if (allowedRoles && !allowedRoles.includes(currentUser.activeRole)) {
-    return <Navigate to={ROUTES.HOME} replace />
+    return <Navigate to={ROLE_HOME[currentUser.activeRole]} replace />
   }
 
   return <Outlet />

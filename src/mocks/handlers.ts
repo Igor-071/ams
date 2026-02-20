@@ -1,17 +1,20 @@
 import type { FilterParams, PaginatedResponse } from '@/types/common.ts'
-import type { User } from '@/types/user.ts'
+import type { User, MerchantProfile } from '@/types/user.ts'
 import type { Service, AccessRequest } from '@/types/service.ts'
 import type { ApiKey } from '@/types/api-key.ts'
 import type { UsageRecord, DailyUsage } from '@/types/usage.ts'
 import type { Invoice } from '@/types/invoice.ts'
 import type { AuditLog } from '@/types/audit.ts'
-import { mockUsers } from './data/users.ts'
+import { mockUsers, mockMerchantProfiles } from './data/users.ts'
 import { mockServices, mockAccessRequests } from './data/services.ts'
 import { mockApiKeys } from './data/api-keys.ts'
 import { mockUsageRecords, mockDailyUsage } from './data/usage.ts'
 import { mockInvoices } from './data/invoices.ts'
 import { mockAuditLogs } from './data/audit-logs.ts'
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants.ts'
+
+// Valid unused invite codes for merchant registration
+const validInviteCodes = new Set(['INV-NEW-2025', 'INV-TEST-2025', 'INV-DEMO-2025'])
 
 function paginate<T>(
   items: T[],
@@ -168,4 +171,67 @@ export function getAuditLogs(
   if (params?.action) items = items.filter((l) => l.action === params.action)
   items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
   return paginate(items, params?.page, params?.pageSize)
+}
+
+// Auth — User lookup
+export function getUserByEmail(email: string): User | undefined {
+  return mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
+}
+
+// Auth — Consumer registration
+export function createConsumerUser(data: {
+  name: string
+  email: string
+  organization?: string
+}): User {
+  const user: User = {
+    id: `user-consumer-${Date.now()}`,
+    email: data.email,
+    name: data.name,
+    roles: ['consumer'],
+    activeRole: 'consumer',
+    status: 'active',
+    createdAt: new Date().toISOString(),
+  }
+  mockUsers.push(user)
+  return user
+}
+
+// Auth — Invite code validation
+export function validateInviteCode(code: string): boolean {
+  return validInviteCodes.has(code)
+}
+
+// Auth — Merchant registration
+export function createMerchantUser(data: {
+  name: string
+  email: string
+  inviteCode: string
+  companyName: string
+  description?: string
+  website?: string
+}): User {
+  const user: User = {
+    id: `user-merchant-${Date.now()}`,
+    email: data.email,
+    name: data.name,
+    roles: ['merchant'],
+    activeRole: 'merchant',
+    status: 'active',
+    createdAt: new Date().toISOString(),
+  }
+  mockUsers.push(user)
+
+  const profile: MerchantProfile = {
+    userId: user.id,
+    companyName: data.companyName,
+    description: data.description ?? '',
+    website: data.website,
+    inviteCode: data.inviteCode,
+    invitedAt: new Date().toISOString(),
+  }
+  mockMerchantProfiles.push(profile)
+
+  validInviteCodes.delete(data.inviteCode)
+  return user
 }

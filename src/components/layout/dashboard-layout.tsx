@@ -11,7 +11,6 @@ import {
   FileTextIcon,
   ShieldIcon,
   ScrollTextIcon,
-  LogOutIcon,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -30,8 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar.tsx'
 import { Separator } from '@/components/ui/separator.tsx'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar.tsx'
-import { Button } from '@/components/ui/button.tsx'
+import { UserMenu } from '@/components/shared/user-menu.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
 import { APP_NAME, FOOTER_TEXT, ROLE_LABELS, ROUTES } from '@/lib/constants.ts'
 import type { Role } from '@/types/user.ts'
@@ -74,18 +72,12 @@ const navByRole: Record<Role, NavItem[]> = {
 }
 
 export function DashboardLayout() {
-  const { currentUser, logout } = useAuthStore()
+  const { currentUser } = useAuthStore()
   const location = useLocation()
 
   if (!currentUser) return null
 
   const navItems = navByRole[currentUser.activeRole]
-  const initials = currentUser.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-
   return (
     <SidebarProvider>
       <Sidebar>
@@ -126,30 +118,7 @@ export function DashboardLayout() {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter className="p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-brand text-xs text-primary-foreground">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">
-                {currentUser.name}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {currentUser.email}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={logout}
-              aria-label="Sign out"
-              className="h-8 w-8 shrink-0"
-            >
-              <LogOutIcon className="h-4 w-4" />
-            </Button>
-          </div>
+          <UserMenu />
         </SidebarFooter>
       </Sidebar>
 

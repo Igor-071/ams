@@ -7,6 +7,9 @@ import { AuthGuard } from '@/components/layout/auth-guard.tsx'
 import { HomeRedirect } from '@/pages/home-redirect.tsx'
 import { NotFoundPage } from '@/pages/not-found.tsx'
 import { PlaceholderPage } from '@/pages/placeholder.tsx'
+import { LoginPage } from '@/features/auth/pages/login-page.tsx'
+import { RegisterPage } from '@/features/auth/pages/register-page.tsx'
+import { MerchantRegisterPage } from '@/features/auth/pages/merchant-register-page.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -28,9 +31,9 @@ export const router = createBrowserRouter([
       {
         element: <AuthLayout />,
         children: [
-          { path: 'login', element: <PlaceholderPage /> },
-          { path: 'register', element: <PlaceholderPage /> },
-          { path: 'register/merchant', element: <PlaceholderPage /> },
+          { path: 'login', element: <LoginPage /> },
+          { path: 'register', element: <RegisterPage /> },
+          { path: 'register/merchant', element: <MerchantRegisterPage /> },
         ],
       },
 
