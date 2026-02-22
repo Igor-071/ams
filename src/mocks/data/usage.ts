@@ -1,6 +1,7 @@
 import type { UsageRecord, DailyUsage } from '@/types/usage.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockUsageRecords: UsageRecord[] = [
+export const mockUsageRecords: UsageRecord[] = hmrCache('__ams_usageRecords', () => [
   {
     id: 'usage-1',
     consumerId: 'user-consumer-1',
@@ -67,9 +68,9 @@ export const mockUsageRecords: UsageRecord[] = [
     responseTimeMs: 500,
     statusCode: 500,
   },
-]
+])
 
-export const mockDailyUsage: DailyUsage[] = [
+export const mockDailyUsage: DailyUsage[] = hmrCache('__ams_dailyUsage', () => [
   { date: '2025-04-14', requestCount: 120, cost: 0.12, errorCount: 2 },
   { date: '2025-04-15', requestCount: 145, cost: 0.15, errorCount: 0 },
   { date: '2025-04-16', requestCount: 89, cost: 0.09, errorCount: 1 },
@@ -84,4 +85,4 @@ export const mockDailyUsage: DailyUsage[] = [
   { date: '2025-04-25', requestCount: 345, cost: 0.35, errorCount: 1 },
   { date: '2025-04-26', requestCount: 178, cost: 0.18, errorCount: 0 },
   { date: '2025-04-27', requestCount: 156, cost: 0.16, errorCount: 3 },
-]
+])

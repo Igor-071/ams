@@ -1,6 +1,7 @@
 import type { Service, AccessRequest } from '@/types/service.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockServices: Service[] = [
+export const mockServices: Service[] = hmrCache('__ams_services', () => [
   {
     id: 'svc-1',
     merchantId: 'user-merchant-1',
@@ -123,9 +124,9 @@ export const mockServices: Service[] = [
     createdAt: '2025-03-15T00:00:00Z',
     updatedAt: '2025-05-01T00:00:00Z',
   },
-]
+])
 
-export const mockAccessRequests: AccessRequest[] = [
+export const mockAccessRequests: AccessRequest[] = hmrCache('__ams_accessRequests', () => [
   {
     id: 'ar-1',
     consumerId: 'user-consumer-1',
@@ -179,4 +180,4 @@ export const mockAccessRequests: AccessRequest[] = [
     resolvedAt: '2025-04-21T00:00:00Z',
     resolvedBy: 'user-admin-1',
   },
-]
+])

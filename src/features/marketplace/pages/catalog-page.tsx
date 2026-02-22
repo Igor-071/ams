@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useDebounce } from '@/hooks/use-debounce.ts'
-import { mockServices } from '@/mocks/data/services.ts'
+import { getActiveServices } from '@/mocks/handlers.ts'
 import { DEBOUNCE_MS } from '@/lib/constants.ts'
 import { ServiceFilters } from '../components/service-filters.tsx'
 import { ServiceGrid } from '../components/service-grid.tsx'
@@ -12,25 +12,10 @@ export function CatalogPage() {
 
   const debouncedSearch = useDebounce(search, DEBOUNCE_MS)
 
-  const filteredServices = useMemo(() => {
-    let services = mockServices.filter((s) => s.status === 'active')
-
-    if (typeFilter !== 'all') {
-      services = services.filter((s) => s.type === typeFilter)
-    }
-
-    if (debouncedSearch) {
-      const lower = debouncedSearch.toLowerCase()
-      services = services.filter(
-        (s) =>
-          s.name.toLowerCase().includes(lower) ||
-          s.description.toLowerCase().includes(lower) ||
-          s.merchantName.toLowerCase().includes(lower),
-      )
-    }
-
-    return services
-  }, [debouncedSearch, typeFilter])
+  const { data: filteredServices } = getActiveServices({
+    search: debouncedSearch || undefined,
+    type: typeFilter === 'all' ? undefined : typeFilter,
+  })
 
   function clearFilters() {
     setSearch('')

@@ -1,6 +1,7 @@
 import type { User, MerchantProfile, ConsumerProfile } from '@/types/user.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockUsers: User[] = [
+export const mockUsers: User[] = hmrCache('__ams_users', () => [
   {
     id: 'user-admin-1',
     email: 'admin@ams.io',
@@ -73,9 +74,9 @@ export const mockUsers: User[] = [
     status: 'active',
     createdAt: '2025-03-20T00:00:00Z',
   },
-]
+])
 
-export const mockMerchantProfiles: MerchantProfile[] = [
+export const mockMerchantProfiles: MerchantProfile[] = hmrCache('__ams_merchantProfiles', () => [
   {
     userId: 'user-merchant-1',
     companyName: 'ACME APIs',
@@ -107,11 +108,11 @@ export const mockMerchantProfiles: MerchantProfile[] = [
     inviteCode: 'INV-TECH-2025',
     invitedAt: '2025-03-10T00:00:00Z',
   },
-]
+])
 
-export const mockConsumerProfiles: ConsumerProfile[] = [
+export const mockConsumerProfiles: ConsumerProfile[] = hmrCache('__ams_consumerProfiles', () => [
   { userId: 'user-consumer-1', organization: 'Startup.io' },
   { userId: 'user-consumer-2', organization: 'BigCorp Inc' },
   { userId: 'user-consumer-3', organization: 'Example LLC' },
   { userId: 'user-dual-1', organization: 'TechCo Solutions' },
-]
+])

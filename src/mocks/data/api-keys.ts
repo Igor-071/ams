@@ -1,6 +1,7 @@
 import type { ApiKey } from '@/types/api-key.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockApiKeys: ApiKey[] = [
+export const mockApiKeys: ApiKey[] = hmrCache('__ams_apiKeys', () => [
   {
     id: 'key-1',
     consumerId: 'user-consumer-1',
@@ -66,4 +67,4 @@ export const mockApiKeys: ApiKey[] = [
     revokedAt: '2025-05-15T00:00:00Z',
     revokedBy: 'merchant',
   },
-]
+])

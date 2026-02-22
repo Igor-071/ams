@@ -1,6 +1,7 @@
 import type { DockerImage } from '@/types/docker.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockDockerImages: DockerImage[] = [
+export const mockDockerImages: DockerImage[] = hmrCache('__ams_dockerImages', () => [
   {
     id: 'img-1',
     serviceId: 'svc-3',
@@ -37,4 +38,4 @@ export const mockDockerImages: DockerImage[] = [
     pushedAt: '2025-04-01T00:00:00Z',
     pushedBy: 'user-dual-1',
   },
-]
+])

@@ -1,6 +1,7 @@
 import type { AuditLog } from '@/types/audit.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockAuditLogs: AuditLog[] = [
+export const mockAuditLogs: AuditLog[] = hmrCache('__ams_auditLogs', () => [
   {
     id: 'audit-1',
     action: 'merchant.invited',
@@ -111,4 +112,4 @@ export const mockAuditLogs: AuditLog[] = [
     description: 'Revoked API key for consumer',
     timestamp: '2025-05-15T00:00:00Z',
   },
-]
+])

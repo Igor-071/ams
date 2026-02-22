@@ -1,6 +1,7 @@
 import type { Project } from '@/types/project.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockProjects: Project[] = [
+export const mockProjects: Project[] = hmrCache('__ams_projects', () => [
   {
     id: 'proj-1',
     consumerId: 'user-consumer-1',
@@ -44,4 +45,4 @@ export const mockProjects: Project[] = [
     apiKeyIds: ['key-2'],
     createdAt: '2025-04-10T00:00:00Z',
   },
-]
+])
