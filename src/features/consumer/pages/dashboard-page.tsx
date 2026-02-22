@@ -6,10 +6,12 @@ import {
   BarChart3Icon,
   DollarSignIcon,
   ArrowRightIcon,
+  ClockIcon,
 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { StatCard } from '@/components/shared/stat-card.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
@@ -21,8 +23,18 @@ export function DashboardPage() {
   const { currentUser } = useAuthStore()
   const consumerId = currentUser?.id ?? ''
 
+  const allRequests = useMemo(
+    () => getAccessRequestsByConsumer(consumerId),
+    [consumerId],
+  )
+
+  const pendingRequests = useMemo(
+    () => allRequests.filter((r) => r.status === 'pending'),
+    [allRequests],
+  )
+
   const stats = useMemo(() => {
-    const approvedRequests = getAccessRequestsByConsumer(consumerId).filter(
+    const approvedRequests = allRequests.filter(
       (r) => r.status === 'approved',
     )
     const activeKeys = getApiKeysByConsumer(consumerId).data.filter(
@@ -40,8 +52,9 @@ export function DashboardPage() {
       activeApiKeys: activeKeys.length,
       totalRequests: usage.total,
       totalCost,
+      pendingRequests: pendingRequests.length,
     }
-  }, [consumerId])
+  }, [consumerId, allRequests, pendingRequests])
 
   const recentActivity = useMemo(() => {
     const usage = getUsageRecords({ consumerId })
@@ -68,6 +81,52 @@ export function DashboardPage() {
           icon={DollarSignIcon}
         />
       </div>
+
+      {pendingRequests.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="font-heading text-lg font-light flex items-center gap-2">
+              <ClockIcon className="h-5 w-5 text-amber-400" />
+              Pending Requests
+              <Badge
+                variant="secondary"
+                className="bg-amber-500/15 text-amber-400 text-xs ml-1"
+              >
+                {pendingRequests.length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pendingRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {req.serviceName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Requested {new Date(req.requestedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full"
+                  >
+                    <Link to={ROUTES.MARKETPLACE_SERVICE(req.serviceId)}>
+                      View
+                    </Link>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

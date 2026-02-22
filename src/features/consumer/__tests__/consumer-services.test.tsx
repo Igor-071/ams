@@ -11,6 +11,7 @@ function renderServicesPage() {
     [
       { path: '/dashboard/services', element: <ConsumerServicesPage /> },
       { path: '/dashboard/services/:serviceId', element: <ConsumerServiceDetailPage /> },
+      { path: '/marketplace/:serviceId', element: <div>Marketplace Detail</div> },
     ],
     { initialEntries: ['/dashboard/services'] },
   )
@@ -79,5 +80,17 @@ describe('Consumer Services', () => {
     expect(screen.getByText('Timestamp')).toBeInTheDocument()
     expect(screen.getByText('Response Time')).toBeInTheDocument()
     expect(screen.getByText('Status')).toBeInTheDocument()
+  })
+
+  // Pending access requests visible on services page
+  it('shows pending access requests above approved services', () => {
+    useAuthStore.getState().login(mockConsumer)
+    renderServicesPage()
+    // user-consumer-1 has ar-3 pending for Sentiment Analysis API
+    expect(screen.getByText('Pending Requests')).toBeInTheDocument()
+    expect(screen.getByText('Sentiment Analysis API')).toBeInTheDocument()
+    // Pending badge
+    const pendingBadges = screen.getAllByText('Pending')
+    expect(pendingBadges.length).toBeGreaterThanOrEqual(1)
   })
 })

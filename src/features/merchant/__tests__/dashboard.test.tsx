@@ -56,4 +56,42 @@ describe('Merchant Dashboard Overview', () => {
     expect(servicesLink).toHaveAttribute('href', '/merchant/services')
     expect(invoicesLink).toHaveAttribute('href', '/merchant/invoices')
   })
+
+  // Access Requests section visible on merchant dashboard
+  it('shows access requests section with heading', () => {
+    renderWithRouter()
+    expect(screen.getByText('Access Requests')).toBeInTheDocument()
+  })
+
+  it('shows recently resolved access requests for merchant-1', () => {
+    renderWithRouter()
+    // merchant-1 has services svc-1, svc-2, svc-6
+    // ar-1 (Alice, svc-1, approved), ar-2 (Alice, svc-2, approved), ar-4 (Dave, svc-1, approved)
+    expect(screen.getByText('Recently Resolved')).toBeInTheDocument()
+  })
+})
+
+describe('Merchant Dashboard — Access Requests (merchant-2)', () => {
+  const mockMerchant2 = {
+    id: 'user-merchant-2',
+    email: 'merchant@dataflow.io',
+    name: 'Maria DataFlow',
+    roles: ['merchant'] as Role[],
+    activeRole: 'merchant' as const,
+    status: 'active' as const,
+    createdAt: '2025-02-20T00:00:00Z',
+  }
+
+  beforeEach(() => {
+    useAuthStore.getState().login(mockMerchant2)
+  })
+
+  it('shows pending access requests for merchant-2 services', () => {
+    renderWithRouter()
+    // merchant-2 has svc-3, svc-4
+    // ar-3: Alice Consumer, svc-4, pending
+    expect(screen.getByText('Access Requests')).toBeInTheDocument()
+    expect(screen.getByText('Alice Consumer')).toBeInTheDocument()
+    expect(screen.getByText(/1 pending/)).toBeInTheDocument()
+  })
 })

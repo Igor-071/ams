@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
 import {
   Table,
   TableBody,
@@ -14,6 +16,7 @@ import {
   getServicesByMerchant,
   getApiKeysForService,
   getUsageRecords,
+  getAccessRequestsByMerchant,
 } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
 
@@ -29,6 +32,12 @@ interface ConsumerKeyRow {
 export function MerchantConsumersPage() {
   const { currentUser } = useAuthStore()
   const merchantId = currentUser?.id ?? ''
+
+  const pendingAccessRequests = useMemo(() => {
+    return getAccessRequestsByMerchant(merchantId).filter(
+      (r) => r.status === 'pending',
+    )
+  }, [merchantId])
 
   const rows = useMemo(() => {
     const services = getServicesByMerchant(merchantId, { pageSize: 100 }).data
@@ -62,6 +71,62 @@ export function MerchantConsumersPage() {
           { label: 'Consumers' },
         ]}
       />
+
+      {pendingAccessRequests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-lg font-light flex items-center gap-2">
+              Pending Access Requests
+              <Badge
+                variant="secondary"
+                className="bg-amber-500/15 text-amber-400 text-xs ml-1"
+              >
+                {pendingAccessRequests.length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.12] text-left text-muted-foreground">
+                    <th className="pb-3 font-medium">Consumer</th>
+                    <th className="pb-3 font-medium">Service</th>
+                    <th className="pb-3 font-medium">Requested</th>
+                    <th className="pb-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingAccessRequests.map((req) => (
+                    <tr
+                      key={req.id}
+                      className="border-b border-white/[0.12] last:border-0"
+                    >
+                      <td className="py-3 font-medium text-foreground">
+                        {req.consumerName}
+                      </td>
+                      <td className="py-3 text-muted-foreground">
+                        {req.serviceName}
+                      </td>
+                      <td className="py-3 text-muted-foreground">
+                        {new Date(req.requestedAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-3">
+                        <Badge
+                          variant="secondary"
+                          className="bg-amber-500/15 text-amber-400 text-xs"
+                        >
+                          Pending
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="rounded-2xl border border-white/[0.12]">
         <Table>

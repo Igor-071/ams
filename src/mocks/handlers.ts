@@ -145,6 +145,13 @@ export function createAccessRequest(data: {
   return request
 }
 
+export function getAccessRequestsByMerchant(merchantId: string): AccessRequest[] {
+  const merchantServiceIds = mockServices
+    .filter((s) => s.merchantId === merchantId)
+    .map((s) => s.id)
+  return mockAccessRequests.filter((r) => merchantServiceIds.includes(r.serviceId))
+}
+
 // API Keys
 export function getApiKeys(params?: FilterParams): PaginatedResponse<ApiKey> {
   let items = [...mockApiKeys]

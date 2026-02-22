@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router'
+import { ClockIcon } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
-import { getConsumerApprovedServices } from '@/mocks/handlers.ts'
+import { getConsumerApprovedServices, getAccessRequestsByConsumer } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
 
 export function ConsumerServicesPage() {
@@ -16,6 +17,14 @@ export function ConsumerServicesPage() {
     () => getConsumerApprovedServices(consumerId),
     [consumerId],
   )
+
+  const { pendingRequests, deniedRequests } = useMemo(() => {
+    const allRequests = getAccessRequestsByConsumer(consumerId)
+    return {
+      pendingRequests: allRequests.filter((r) => r.status === 'pending'),
+      deniedRequests: allRequests.filter((r) => r.status === 'denied'),
+    }
+  }, [consumerId])
 
   return (
     <div className="space-y-6">
@@ -28,7 +37,90 @@ export function ConsumerServicesPage() {
         ]}
       />
 
-      {services.length === 0 ? (
+      {pendingRequests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-lg font-light flex items-center gap-2">
+              <ClockIcon className="h-5 w-5 text-amber-400" />
+              Pending Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pendingRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {req.serviceName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Requested {new Date(req.requestedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="secondary"
+                      className="bg-amber-500/15 text-amber-400 text-xs"
+                    >
+                      Pending
+                    </Badge>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full"
+                    >
+                      <Link to={ROUTES.MARKETPLACE_SERVICE(req.serviceId)}>
+                        View
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {deniedRequests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-lg font-light">
+              Denied Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {deniedRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {req.serviceName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Requested {new Date(req.requestedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="bg-red-500/15 text-red-400 text-xs"
+                  >
+                    Denied
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {services.length === 0 && pendingRequests.length === 0 && deniedRequests.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">
@@ -39,7 +131,7 @@ export function ConsumerServicesPage() {
             </Button>
           </CardContent>
         </Card>
-      ) : (
+      ) : services.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="font-heading text-lg font-light">
@@ -100,7 +192,7 @@ export function ConsumerServicesPage() {
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   )
 }

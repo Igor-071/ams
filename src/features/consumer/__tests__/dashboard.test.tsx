@@ -7,7 +7,10 @@ import { DashboardPage } from '../pages/dashboard-page.tsx'
 
 function renderWithRouter(initialEntry = '/dashboard') {
   const router = createMemoryRouter(
-    [{ path: '/dashboard', element: <DashboardPage /> }],
+    [
+      { path: '/dashboard', element: <DashboardPage /> },
+      { path: '/marketplace/:serviceId', element: <div>Marketplace Detail</div> },
+    ],
     { initialEntries: [initialEntry] },
   )
   return render(<RouterProvider router={router} />)
@@ -64,5 +67,15 @@ describe('Consumer Dashboard Overview', () => {
     const usageLink = screen.getByRole('link', { name: /Usage/i })
     expect(apiKeysLink).toHaveAttribute('href', '/dashboard/api-keys')
     expect(usageLink).toHaveAttribute('href', '/dashboard/usage')
+  })
+
+  // Pending requests card shown on dashboard
+  it('shows pending requests card with count', () => {
+    renderWithRouter()
+    // user-consumer-1 has ar-3 pending for Sentiment Analysis API
+    expect(screen.getByText('Pending Requests')).toBeInTheDocument()
+    expect(screen.getByText('Sentiment Analysis API')).toBeInTheDocument()
+    // Badge with count "1"
+    expect(screen.getByText('1')).toBeInTheDocument()
   })
 })

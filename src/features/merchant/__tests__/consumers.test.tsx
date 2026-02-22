@@ -77,3 +77,29 @@ describe('Merchant Consumer Management', () => {
     expect(screen.getByRole('button', { name: /Cancel/i })).toBeInTheDocument()
   })
 })
+
+describe('Merchant Consumers — Pending Access Requests', () => {
+  const mockMerchant2 = {
+    id: 'user-merchant-2',
+    email: 'merchant@dataflow.io',
+    name: 'Maria DataFlow',
+    roles: ['merchant'] as Role[],
+    activeRole: 'merchant' as const,
+    status: 'active' as const,
+    createdAt: '2025-02-20T00:00:00Z',
+  }
+
+  it('shows pending access requests table for merchant-2', () => {
+    useAuthStore.getState().login(mockMerchant2)
+    const router = createMemoryRouter(
+      [{ path: '/merchant/consumers', element: <MerchantConsumersPage /> }],
+      { initialEntries: ['/merchant/consumers'] },
+    )
+    render(<RouterProvider router={router} />)
+    // merchant-2 has svc-3, svc-4
+    // ar-3: Alice Consumer, svc-4 (Sentiment Analysis API), pending
+    expect(screen.getByText('Pending Access Requests')).toBeInTheDocument()
+    expect(screen.getByText('Alice Consumer')).toBeInTheDocument()
+    expect(screen.getByText('Sentiment Analysis API')).toBeInTheDocument()
+  })
+})
