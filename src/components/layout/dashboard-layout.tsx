@@ -11,6 +11,7 @@ import {
   FileTextIcon,
   ShieldIcon,
   ScrollTextIcon,
+  ShoppingBagIcon,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -152,7 +153,14 @@ export function DashboardLayout() {
               {ROLE_LABELS[currentUser.activeRole]}
             </span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <Link
+              to={ROUTES.MARKETPLACE}
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-heading font-light text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+            >
+              <ShoppingBagIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Marketplace</span>
+            </Link>
             <NotificationCenter />
           </div>
         </header>
