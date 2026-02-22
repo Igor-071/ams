@@ -14,6 +14,7 @@ import { mockInvoices } from './data/invoices.ts'
 import { mockAuditLogs } from './data/audit-logs.ts'
 import { mockDockerImages } from './data/docker-images.ts'
 import { mockProjects } from './data/projects.ts'
+import { persistCache, CACHE_KEYS } from './data/hmr-cache.ts'
 import type { DockerImage } from '@/types/docker.ts'
 import type { Project } from '@/types/project.ts'
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants.ts'
@@ -140,6 +141,7 @@ export function createAccessRequest(data: {
     requestedAt: new Date().toISOString(),
   }
   mockAccessRequests.push(request)
+  persistCache(CACHE_KEYS.accessRequests)
   return request
 }
 
@@ -232,6 +234,7 @@ export function createConsumerUser(data: {
     createdAt: new Date().toISOString(),
   }
   mockUsers.push(user)
+  persistCache(CACHE_KEYS.users)
   return user
 }
 
@@ -259,6 +262,7 @@ export function createMerchantUser(data: {
     createdAt: new Date().toISOString(),
   }
   mockUsers.push(user)
+  persistCache(CACHE_KEYS.users)
 
   const profile: MerchantProfile = {
     userId: user.id,
@@ -269,6 +273,7 @@ export function createMerchantUser(data: {
     invitedAt: new Date().toISOString(),
   }
   mockMerchantProfiles.push(profile)
+  persistCache(CACHE_KEYS.merchantProfiles)
 
   validInviteCodes.delete(data.inviteCode)
   return user
@@ -301,6 +306,7 @@ export function createApiKey(data: {
     createdAt: now.toISOString(),
   }
   mockApiKeys.push(key)
+  persistCache(CACHE_KEYS.apiKeys)
   return key
 }
 
@@ -310,6 +316,7 @@ export function revokeApiKey(keyId: string, by: 'consumer' | 'merchant' = 'consu
   key.status = 'revoked'
   key.revokedAt = new Date().toISOString()
   key.revokedBy = by
+  persistCache(CACHE_KEYS.apiKeys)
   return key
 }
 
@@ -367,6 +374,7 @@ export function createProject(data: {
     createdAt: new Date().toISOString(),
   }
   mockProjects.push(project)
+  persistCache(CACHE_KEYS.projects)
   return project
 }
 
@@ -400,6 +408,7 @@ export function createService(data: {
     updatedAt: new Date().toISOString(),
   }
   mockServices.push(service)
+  persistCache(CACHE_KEYS.services)
   return service
 }
 
@@ -444,6 +453,7 @@ export function suspendMerchant(userId: string): User | undefined {
   const user = mockUsers.find((u) => u.id === userId)
   if (!user || user.status !== 'active') return undefined
   user.status = 'suspended'
+  persistCache(CACHE_KEYS.users)
   addAuditLog('merchant.suspended', 'user-admin-1', 'Sarah Admin', userId, 'merchant', `Suspended merchant ${user.name}`)
   return user
 }
@@ -452,6 +462,7 @@ export function unsuspendMerchant(userId: string): User | undefined {
   const user = mockUsers.find((u) => u.id === userId)
   if (!user || user.status !== 'suspended') return undefined
   user.status = 'active'
+  persistCache(CACHE_KEYS.users)
   addAuditLog('merchant.unsuspended', 'user-admin-1', 'Sarah Admin', userId, 'merchant', `Unsuspended merchant ${user.name}`)
   return user
 }
@@ -468,6 +479,8 @@ export function blockConsumer(userId: string): User | undefined {
     key.revokedAt = new Date().toISOString()
     key.revokedBy = 'consumer'
   }
+  persistCache(CACHE_KEYS.users)
+  persistCache(CACHE_KEYS.apiKeys)
   addAuditLog('consumer.blocked', 'user-admin-1', 'Sarah Admin', userId, 'consumer', `Blocked consumer ${user.name}`)
   return user
 }
@@ -476,6 +489,7 @@ export function unblockConsumer(userId: string): User | undefined {
   const user = mockUsers.find((u) => u.id === userId)
   if (!user || user.status !== 'blocked') return undefined
   user.status = 'active'
+  persistCache(CACHE_KEYS.users)
   addAuditLog('consumer.unblocked', 'user-admin-1', 'Sarah Admin', userId, 'consumer', `Unblocked consumer ${user.name}`)
   return user
 }
@@ -486,6 +500,7 @@ export function approveService(serviceId: string): Service | undefined {
   if (!service || service.status !== 'pending_approval') return undefined
   service.status = 'active'
   service.updatedAt = new Date().toISOString()
+  persistCache(CACHE_KEYS.services)
   addAuditLog('service.approved', 'user-admin-1', 'Sarah Admin', serviceId, 'service', `Approved service ${service.name}`)
   return service
 }
@@ -495,6 +510,7 @@ export function rejectService(serviceId: string): Service | undefined {
   if (!service || service.status !== 'pending_approval') return undefined
   service.status = 'rejected'
   service.updatedAt = new Date().toISOString()
+  persistCache(CACHE_KEYS.services)
   addAuditLog('service.rejected', 'user-admin-1', 'Sarah Admin', serviceId, 'service', `Rejected service ${service.name}`)
   return service
 }
@@ -506,6 +522,7 @@ export function approveAccessRequest(requestId: string): AccessRequest | undefin
   request.status = 'approved'
   request.resolvedAt = new Date().toISOString()
   request.resolvedBy = 'user-admin-1'
+  persistCache(CACHE_KEYS.accessRequests)
   addAuditLog('access.approved', 'user-admin-1', 'Sarah Admin', requestId, 'access_request', `Approved access to ${request.serviceName}`)
   return request
 }
@@ -516,6 +533,7 @@ export function denyAccessRequest(requestId: string): AccessRequest | undefined 
   request.status = 'denied'
   request.resolvedAt = new Date().toISOString()
   request.resolvedBy = 'user-admin-1'
+  persistCache(CACHE_KEYS.accessRequests)
   addAuditLog('access.denied', 'user-admin-1', 'Sarah Admin', requestId, 'access_request', `Denied access to ${request.serviceName}`)
   return request
 }
@@ -589,6 +607,7 @@ export function simulateConsumption(apiKeyValue: string, serviceId: string): Con
     statusCode: 200,
   }
   mockUsageRecords.push(usageRecord)
+  persistCache(CACHE_KEYS.usageRecords)
 
   return { success: true, statusCode: 200, validationResults: results, responseTimeMs }
 }
@@ -637,4 +656,5 @@ function addAuditLog(
     description,
     timestamp: new Date().toISOString(),
   })
+  persistCache(CACHE_KEYS.auditLogs)
 }

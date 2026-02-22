@@ -1,6 +1,7 @@
 import type { Invoice } from '@/types/invoice.ts'
+import { hmrCache } from './hmr-cache.ts'
 
-export const mockInvoices: Invoice[] = [
+export const mockInvoices: Invoice[] = hmrCache('__ams_invoices', () => [
   {
     id: 'inv-1',
     merchantId: 'user-merchant-1',
@@ -57,4 +58,4 @@ export const mockInvoices: Invoice[] = [
     issuedAt: '2025-04-01T00:00:00Z',
     dueAt: '2025-04-30T00:00:00Z',
   },
-]
+])

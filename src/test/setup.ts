@@ -32,4 +32,5 @@ if (typeof globalThis.localStorage === 'undefined' || typeof globalThis.localSto
 
 afterEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
 });
