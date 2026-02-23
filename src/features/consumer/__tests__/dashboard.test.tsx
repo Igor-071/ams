@@ -1,9 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import type { Role } from '@/types/user.ts'
 import { useAuthStore } from '@/stores/auth-store.ts'
 import { DashboardPage } from '../pages/dashboard-page.tsx'
+
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts')
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 800, height: 300 }}>{children}</div>
+    ),
+  }
+})
 
 function renderWithRouter(initialEntry = '/dashboard') {
   const router = createMemoryRouter(
@@ -77,5 +87,29 @@ describe('Consumer Dashboard Overview', () => {
     expect(screen.getByText('Sentiment Analysis API')).toBeInTheDocument()
     // Badge with count "1"
     expect(screen.getByText('1')).toBeInTheDocument()
+  })
+
+  it('renders Usage Activity chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Usage Activity')).toBeInTheDocument()
+    expect(screen.getByTestId('usage-activity-chart')).toBeInTheDocument()
+  })
+
+  it('renders Cost Trend chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Cost Trend')).toBeInTheDocument()
+    expect(screen.getByTestId('cost-trend-chart')).toBeInTheDocument()
+  })
+
+  it('renders Request Status chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Request Status')).toBeInTheDocument()
+    expect(screen.getByTestId('request-status-chart')).toBeInTheDocument()
+  })
+
+  it('renders Top Services chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Top Services')).toBeInTheDocument()
+    expect(screen.getByTestId('top-services-chart')).toBeInTheDocument()
   })
 })

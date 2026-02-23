@@ -211,6 +211,30 @@ export function getDailyUsageByMerchant(merchantId: string): DailyUsage[] {
   })
 }
 
+export function getDailyUsageByConsumer(consumerId: string): DailyUsage[] {
+  const approvedServiceIds = mockAccessRequests
+    .filter((r) => r.consumerId === consumerId && r.status === 'approved')
+    .map((r) => r.serviceId)
+  const totalActiveServices = mockServices.filter((s) => s.status === 'active').length || 1
+  const baseShare = approvedServiceIds.length / totalActiveServices
+
+  // Seeded PRNG keyed on consumerId for deterministic ±30% daily variance
+  let seed = 0
+  for (let i = 0; i < consumerId.length; i++) {
+    seed = (seed * 31 + consumerId.charCodeAt(i)) | 0
+  }
+  seed = Math.abs(seed) || 1
+
+  return mockDailyUsage.map((day) => {
+    seed = (seed * 16807 + 0) % 2147483647
+    const variance = 0.7 + ((seed - 1) / 2147483646) * 0.6 // 0.7–1.3
+    const requestCount = Math.max(1, Math.round(day.requestCount * baseShare * variance))
+    const cost = Math.round(requestCount * 0.001 * 100) / 100
+    const errorCount = Math.round(day.errorCount * baseShare * variance)
+    return { date: day.date, requestCount, cost, errorCount }
+  })
+}
+
 export function getUsageRecordsByDate(
   date: string,
   params?: FilterParams,
