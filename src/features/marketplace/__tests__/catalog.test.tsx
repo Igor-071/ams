@@ -43,11 +43,12 @@ describe('Marketplace Catalog', () => {
     expect(screen.getByRole('heading', { name: /marketplace/i })).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Search services...')).toBeInTheDocument()
     expect(screen.getByLabelText('Filter by type')).toBeInTheDocument()
-    // Active services should be rendered (svc-1, svc-2, svc-3, svc-4 = 4 active)
+    // Active public services should be rendered (svc-1, svc-2, svc-3 = 3 public active; svc-4 is private)
     expect(screen.getByText('Weather API')).toBeInTheDocument()
     expect(screen.getByText('Geocoding API')).toBeInTheDocument()
     expect(screen.getByText('Stream Processor')).toBeInTheDocument()
-    expect(screen.getByText('Sentiment Analysis API')).toBeInTheDocument()
+    // svc-4 Sentiment Analysis API is private, not shown in catalog
+    expect(screen.queryByText('Sentiment Analysis API')).not.toBeInTheDocument()
   })
 
   // AC-029: Service cards show key information
@@ -96,7 +97,8 @@ describe('Marketplace Catalog', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Stream Processor')).toBeInTheDocument()
-      expect(screen.getByText('Sentiment Analysis API')).toBeInTheDocument()
+      // Sentiment Analysis API is private, not shown in catalog even when searching
+      expect(screen.queryByText('Sentiment Analysis API')).not.toBeInTheDocument()
       expect(screen.queryByText('Weather API')).not.toBeInTheDocument()
     })
   })

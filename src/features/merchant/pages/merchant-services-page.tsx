@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { PlusIcon } from 'lucide-react'
+import { PlusIcon, LockIcon } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
@@ -52,6 +52,7 @@ export function MerchantServicesPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Type</TableHead>
+              <TableHead>Visibility</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Category</TableHead>
             </TableRow>
@@ -70,6 +71,19 @@ export function MerchantServicesPage() {
                     className="bg-primary/10 text-primary text-xs"
                   >
                     {service.type.toUpperCase()}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant="secondary"
+                    className={
+                      service.visibility === 'private'
+                        ? 'bg-amber-500/15 text-amber-400 text-xs'
+                        : 'bg-emerald-500/15 text-emerald-400 text-xs'
+                    }
+                  >
+                    {service.visibility === 'private' && <LockIcon className="mr-1 h-3 w-3" />}
+                    {service.visibility === 'private' ? 'Private' : 'Public'}
                   </Badge>
                 </TableCell>
                 <TableCell>

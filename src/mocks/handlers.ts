@@ -80,7 +80,7 @@ export function getServices(params?: FilterParams): PaginatedResponse<Service> {
 }
 
 export function getActiveServices(params?: FilterParams): PaginatedResponse<Service> {
-  const activeServices = mockServices.filter((s) => s.status === 'active')
+  const activeServices = mockServices.filter((s) => s.status === 'active' && s.visibility !== 'private')
   let items = [...activeServices]
   items = filterBySearch(items, params?.search, ['name', 'description', 'merchantName'])
   if (params?.type) items = items.filter((s) => s.type === params.type)
@@ -397,6 +397,7 @@ export function createService(data: {
   rateLimitPerMinute?: number
   endpoint?: Service['endpoint']
   tags?: string[]
+  visibility?: Service['visibility']
 }): Service {
   const service: Service = {
     id: uniqueId('svc'),
@@ -406,6 +407,7 @@ export function createService(data: {
     description: data.description,
     type: data.type,
     status: 'pending_approval',
+    visibility: data.visibility ?? 'public',
     category: data.category,
     pricing: data.pricing,
     rateLimitPerMinute: data.rateLimitPerMinute ?? 0,

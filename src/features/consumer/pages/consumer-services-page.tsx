@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router'
-import { ClockIcon } from 'lucide-react'
+import { ClockIcon, LockIcon } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
-import { getConsumerApprovedServices, getAccessRequestsByConsumer } from '@/mocks/handlers.ts'
+import { getConsumerApprovedServices, getAccessRequestsByConsumer, getServiceById } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
 
 export function ConsumerServicesPage() {
@@ -61,6 +61,12 @@ export function ConsumerServicesPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    {getServiceById(req.serviceId)?.visibility === 'private' && (
+                      <Badge variant="secondary" className="bg-amber-500/15 text-amber-400 text-xs">
+                        <LockIcon className="mr-1 h-3 w-3" />
+                        Private
+                      </Badge>
+                    )}
                     <Badge
                       variant="secondary"
                       className="bg-amber-500/15 text-amber-400 text-xs"
@@ -146,6 +152,7 @@ export function ConsumerServicesPage() {
                     <th className="pb-3 font-medium">Service</th>
                     <th className="pb-3 font-medium">Merchant</th>
                     <th className="pb-3 font-medium">Type</th>
+                    <th className="pb-3 font-medium">Visibility</th>
                     <th className="pb-3 font-medium">Category</th>
                     <th className="pb-3 font-medium" />
                   </tr>
@@ -168,6 +175,19 @@ export function ConsumerServicesPage() {
                           className="bg-primary/10 text-primary text-xs"
                         >
                           {svc.type.toUpperCase()}
+                        </Badge>
+                      </td>
+                      <td className="py-3">
+                        <Badge
+                          variant="secondary"
+                          className={
+                            svc.visibility === 'private'
+                              ? 'bg-amber-500/15 text-amber-400 text-xs'
+                              : 'bg-emerald-500/15 text-emerald-400 text-xs'
+                          }
+                        >
+                          {svc.visibility === 'private' && <LockIcon className="mr-1 h-3 w-3" />}
+                          {svc.visibility === 'private' ? 'Private' : 'Public'}
                         </Badge>
                       </td>
                       <td className="py-3 text-muted-foreground">

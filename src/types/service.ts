@@ -1,5 +1,7 @@
 export type ServiceType = 'api' | 'docker'
 
+export type ServiceVisibility = 'public' | 'private'
+
 export type ServiceStatus =
   | 'draft'
   | 'pending_approval'
@@ -35,6 +37,7 @@ export interface Service {
   description: string
   type: ServiceType
   status: ServiceStatus
+  visibility: ServiceVisibility
   category: string
   pricing: PricingModel
   rateLimitPerMinute: number

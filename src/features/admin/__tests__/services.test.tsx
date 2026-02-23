@@ -37,8 +37,8 @@ const mockAdmin = {
 }
 
 describe('Admin Service Approval', () => {
-  // AC-097: Service list with status filter
-  it('renders service list with all services and status filter', async () => {
+  // AC-097: Service list with status filter and visibility column
+  it('renders service list with all services, visibility column, and status filter', async () => {
     useAuthStore.getState().login(mockAdmin)
     renderServicesPage()
     expect(screen.getByRole('heading', { name: /Services/ })).toBeInTheDocument()
@@ -48,6 +48,11 @@ describe('Admin Service Approval', () => {
     expect(screen.getByRole('button', { name: 'all' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'pending' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'active' })).toBeInTheDocument()
+    // Visibility column header and badges
+    expect(screen.getByText('Visibility')).toBeInTheDocument()
+    expect(screen.getAllByText('Public').length).toBeGreaterThan(0)
+    // svc-4 is private
+    expect(screen.getByText('Private')).toBeInTheDocument()
   })
 
   it('filters services by pending status', async () => {

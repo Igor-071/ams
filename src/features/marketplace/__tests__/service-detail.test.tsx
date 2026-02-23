@@ -127,4 +127,13 @@ describe('Service Detail Page', () => {
 
     expect(screen.getByText('Service not found')).toBeInTheDocument()
   })
+
+  // Private service accessible via direct link with Private badge
+  it('shows Private badge and unlisted info for private service via direct link', () => {
+    renderServiceDetail('svc-4') // private active service
+
+    expect(screen.getByRole('heading', { name: 'Sentiment Analysis API' })).toBeInTheDocument()
+    expect(screen.getByText('Private')).toBeInTheDocument()
+    expect(screen.getByText('This service is not listed in the marketplace catalog')).toBeInTheDocument()
+  })
 })

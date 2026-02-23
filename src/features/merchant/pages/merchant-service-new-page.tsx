@@ -9,7 +9,8 @@ import { useAuthStore } from '@/stores/auth-store.ts'
 import { mockMerchantProfiles } from '@/mocks/data/users.ts'
 import { createService } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
-import type { ServiceType, PricingModel } from '@/types/service.ts'
+import { GlobeIcon, LockIcon } from 'lucide-react'
+import type { ServiceType, ServiceVisibility, PricingModel } from '@/types/service.ts'
 
 export function MerchantServiceNewPage() {
   const { currentUser } = useAuthStore()
@@ -18,6 +19,7 @@ export function MerchantServiceNewPage() {
   const profile = mockMerchantProfiles.find((p) => p.userId === merchantId)
 
   const [serviceType, setServiceType] = useState<ServiceType>('api')
+  const [visibility, setVisibility] = useState<ServiceVisibility>('public')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
@@ -44,6 +46,7 @@ export function MerchantServiceNewPage() {
       name: name.trim(),
       description: description.trim(),
       type: serviceType,
+      visibility,
       category: category.trim(),
       pricing,
       rateLimitPerMinute: serviceType === 'api' ? Number(rateLimit) : 0,
@@ -90,6 +93,27 @@ export function MerchantServiceNewPage() {
                     onClick={() => setServiceType(t)}
                   >
                     {t.toUpperCase()}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Visibility</Label>
+              <div className="flex gap-2">
+                {([
+                  { value: 'public' as ServiceVisibility, label: 'Public', Icon: GlobeIcon },
+                  { value: 'private' as ServiceVisibility, label: 'Private', Icon: LockIcon },
+                ]).map(({ value, label, Icon }) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    variant={visibility === value ? 'default' : 'outline'}
+                    className="rounded-full"
+                    onClick={() => setVisibility(value)}
+                  >
+                    <Icon className="mr-1.5 h-3.5 w-3.5" />
+                    {label}
                   </Button>
                 ))}
               </div>

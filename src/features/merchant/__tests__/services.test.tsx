@@ -54,8 +54,8 @@ describe('Merchant Service Management', () => {
     useAuthStore.getState().login(mockMerchant)
   })
 
-  // AC-070: Services list table displays merchant services
-  it('renders service table with merchant services', () => {
+  // AC-070: Services list table displays merchant services with visibility column
+  it('renders service table with merchant services and visibility column', () => {
     renderServicesPage()
     expect(screen.getByRole('heading', { name: /Services/ })).toBeInTheDocument()
     expect(screen.getByText('Weather API')).toBeInTheDocument()
@@ -63,10 +63,14 @@ describe('Merchant Service Management', () => {
     expect(screen.getByText('Image Recognition API')).toBeInTheDocument()
     // "New Service" button exists
     expect(screen.getByRole('link', { name: /New Service/i })).toBeInTheDocument()
+    // Visibility column header
+    expect(screen.getByText('Visibility')).toBeInTheDocument()
+    // All merchant-1 services are public
+    expect(screen.getAllByText('Public').length).toBeGreaterThan(0)
   })
 
   // AC-071: Create new service form renders with required fields
-  it('renders create service form with type toggle and required fields', () => {
+  it('renders create service form with type toggle, visibility toggle, and required fields', () => {
     renderServiceNew()
     expect(screen.getByRole('heading', { name: /New Service/ })).toBeInTheDocument()
     expect(screen.getByLabelText(/Name/)).toBeInTheDocument()
@@ -75,6 +79,9 @@ describe('Merchant Service Management', () => {
     // Type toggle buttons
     expect(screen.getByRole('button', { name: 'API' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'DOCKER' })).toBeInTheDocument()
+    // Visibility toggle buttons
+    expect(screen.getByRole('button', { name: /Public/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Private/ })).toBeInTheDocument()
   })
 
   // AC-072: API type shows pricing, rate limit, and endpoint fields

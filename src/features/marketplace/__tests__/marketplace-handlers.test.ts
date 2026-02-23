@@ -7,10 +7,13 @@ import {
 } from '@/mocks/handlers.ts'
 
 describe('Marketplace Mock Handlers', () => {
-  it('getActiveServices returns only active services', () => {
+  it('getActiveServices returns only active public services', () => {
     const result = getActiveServices()
     expect(result.data.length).toBeGreaterThan(0)
     expect(result.data.every((s) => s.status === 'active')).toBe(true)
+    // svc-4 is active but private, should be excluded
+    expect(result.data.every((s) => s.visibility !== 'private')).toBe(true)
+    expect(result.data.find((s) => s.id === 'svc-4')).toBeUndefined()
   })
 
   it('getActiveServices filters by type', () => {

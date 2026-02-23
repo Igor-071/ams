@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { CloudIcon, ContainerIcon } from 'lucide-react'
+import { CloudIcon, ContainerIcon, LockIcon } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { ROUTES } from '@/lib/constants.ts'
@@ -52,10 +52,18 @@ export function ServiceCard({ service }: ServiceCardProps) {
               </h3>
               <p className="text-xs text-muted-foreground">{service.merchantName}</p>
             </div>
-            <Badge variant="secondary" className={`shrink-0 text-xs ${config.className}`}>
-              <TypeIcon className="mr-1 h-3 w-3" />
-              {config.label}
-            </Badge>
+            <div className="flex shrink-0 gap-1.5">
+              {service.visibility === 'private' && (
+                <Badge variant="secondary" className="bg-amber-500/15 text-amber-400 text-xs">
+                  <LockIcon className="mr-1 h-3 w-3" />
+                  Private
+                </Badge>
+              )}
+              <Badge variant="secondary" className={`text-xs ${config.className}`}>
+                <TypeIcon className="mr-1 h-3 w-3" />
+                {config.label}
+              </Badge>
+            </div>
           </div>
 
           <p className="flex-1 text-sm text-muted-foreground line-clamp-2">

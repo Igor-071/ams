@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router'
-import { ArrowLeftIcon, ExternalLinkIcon, CloudIcon, ContainerIcon, GaugeIcon } from 'lucide-react'
+import { ArrowLeftIcon, ExternalLinkIcon, CloudIcon, ContainerIcon, GaugeIcon, LockIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Button } from '@/components/ui/button.tsx'
@@ -57,11 +57,24 @@ export function ServiceDetailPage() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   by {service.merchantName}
                 </p>
+                {service.visibility === 'private' && (
+                  <p className="mt-1 text-xs text-amber-400">
+                    This service is not listed in the marketplace catalog
+                  </p>
+                )}
               </div>
-              <Badge variant="secondary" className={`text-xs ${typeClass}`}>
-                <TypeIcon className="mr-1 h-3 w-3" />
-                {typeLabel}
-              </Badge>
+              <div className="flex gap-1.5">
+                {service.visibility === 'private' && (
+                  <Badge variant="secondary" className="bg-amber-500/15 text-amber-400 text-xs">
+                    <LockIcon className="mr-1 h-3 w-3" />
+                    Private
+                  </Badge>
+                )}
+                <Badge variant="secondary" className={`text-xs ${typeClass}`}>
+                  <TypeIcon className="mr-1 h-3 w-3" />
+                  {typeLabel}
+                </Badge>
+              </div>
             </div>
           </div>
 

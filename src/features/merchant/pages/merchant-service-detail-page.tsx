@@ -3,6 +3,7 @@ import { useParams } from 'react-router'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
+import { LockIcon } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
 import { ConsumptionEndpointDocs } from '../components/consumption-endpoint-docs.tsx'
 import { ConsumptionSimulator } from '../components/consumption-simulator.tsx'
@@ -67,6 +68,20 @@ export function MerchantServiceDetailPage() {
               <p className="text-sm text-muted-foreground">Type</p>
               <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
                 {service.type.toUpperCase()}
+              </Badge>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Visibility</p>
+              <Badge
+                variant="secondary"
+                className={
+                  service.visibility === 'private'
+                    ? 'bg-amber-500/15 text-amber-400 text-xs'
+                    : 'bg-emerald-500/15 text-emerald-400 text-xs'
+                }
+              >
+                {service.visibility === 'private' && <LockIcon className="mr-1 h-3 w-3" />}
+                {service.visibility === 'private' ? 'Private' : 'Public'}
               </Badge>
             </div>
             <div>
