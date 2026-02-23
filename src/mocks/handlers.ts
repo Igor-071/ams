@@ -224,6 +224,44 @@ export function getUsageRecordsByDate(
   return paginate(records, params?.page, params?.pageSize ?? 20)
 }
 
+export function getUsageRecordsByDateForConsumer(
+  date: string,
+  consumerId: string,
+  params?: FilterParams,
+): PaginatedResponse<UsageRecord> {
+  let records = generateUsageRecordsForDate(date).filter(
+    (r) => r.consumerId === consumerId,
+  )
+
+  if (params?.sortBy) {
+    const dir = params.sortOrder === 'desc' ? -1 : 1
+    const key = params.sortBy
+
+    records = [...records].sort((a, b) => {
+      let aVal: string | number
+      let bVal: string | number
+
+      if (key === 'serviceName') {
+        aVal = getServiceById(a.serviceId)?.name ?? ''
+        bVal = getServiceById(b.serviceId)?.name ?? ''
+      } else if (key === 'serviceType') {
+        aVal = getServiceById(a.serviceId)?.type ?? ''
+        bVal = getServiceById(b.serviceId)?.type ?? ''
+      } else {
+        aVal = a[key as keyof UsageRecord] as string | number
+        bVal = b[key as keyof UsageRecord] as string | number
+      }
+
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return aVal.localeCompare(bVal) * dir
+      }
+      return ((aVal as number) - (bVal as number)) * dir
+    })
+  }
+
+  return paginate(records, params?.page, params?.pageSize ?? 20)
+}
+
 // Invoices
 export function getInvoices(params?: FilterParams): PaginatedResponse<Invoice> {
   let items = [...mockInvoices]

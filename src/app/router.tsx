@@ -21,6 +21,7 @@ import { ProjectsPage } from '@/features/consumer/pages/projects-page.tsx'
 import { ProjectDetailPage } from '@/features/consumer/pages/project-detail-page.tsx'
 import { ConsumerServicesPage } from '@/features/consumer/pages/consumer-services-page.tsx'
 import { ConsumerServiceDetailPage } from '@/features/consumer/pages/consumer-service-detail-page.tsx'
+import { ConsumerUsageDetailPage } from '@/features/consumer/pages/consumer-usage-detail-page.tsx'
 import { MerchantDashboardPage } from '@/features/merchant/pages/merchant-dashboard-page.tsx'
 import { MerchantServicesPage } from '@/features/merchant/pages/merchant-services-page.tsx'
 import { MerchantServiceNewPage } from '@/features/merchant/pages/merchant-service-new-page.tsx'
@@ -79,6 +80,7 @@ export const router = createBrowserRouter([
               { path: 'dashboard/api-keys/new', element: <ApiKeyNewPage /> },
               { path: 'dashboard/api-keys/:keyId', element: <ApiKeyDetailPage /> },
               { path: 'dashboard/usage', element: <UsagePage /> },
+              { path: 'dashboard/usage/:date', element: <ConsumerUsageDetailPage /> },
               { path: 'dashboard/services', element: <ConsumerServicesPage /> },
               { path: 'dashboard/services/:serviceId', element: <ConsumerServiceDetailPage /> },
               { path: 'dashboard/images', element: <ImagesPage /> },

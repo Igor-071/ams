@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router'
 import {
   BarChart3Icon,
   DollarSignIcon,
@@ -17,38 +18,71 @@ import {
   TableRow,
 } from '@/components/ui/table.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
-import { getDailyUsage, getUsageRecords, getServiceById } from '@/mocks/handlers.ts'
+import {
+  getDailyUsage,
+  getUsageRecords,
+  getServiceById,
+  getApiKeysByConsumer,
+} from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
+import { ConsumptionChart } from '@/features/merchant/components/consumption-chart.tsx'
 
 export function UsagePage() {
+  const navigate = useNavigate()
   const { currentUser } = useAuthStore()
   const consumerId = currentUser?.id ?? ''
 
-  const dailyUsage = useMemo(() => {
-    return getDailyUsage().sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    )
-  }, [])
+  const dailyUsage = useMemo(() => getDailyUsage(), [])
+
+  const usageRecords = useMemo(
+    () => getUsageRecords({ consumerId }).data,
+    [consumerId],
+  )
 
   const summaryStats = useMemo(() => {
-    const totalRequests = dailyUsage.reduce((sum, d) => sum + d.requestCount, 0)
-    const totalCost = dailyUsage.reduce((sum, d) => sum + d.cost, 0)
-    const totalErrors = dailyUsage.reduce((sum, d) => sum + d.errorCount, 0)
-    const errorRate = totalRequests > 0 ? (totalErrors / totalRequests) * 100 : 0
-
-    const usageRecords = getUsageRecords({ consumerId }).data
+    const totalRequests = usageRecords.length
+    const totalCost = usageRecords.reduce((sum, r) => {
+      const svc = getServiceById(r.serviceId)
+      return sum + (svc?.pricing.pricePerRequest ?? 0)
+    }, 0)
     const avgResponseTime =
-      usageRecords.length > 0
-        ? usageRecords.reduce((sum, u) => sum + u.responseTimeMs, 0) /
-          usageRecords.length
+      totalRequests > 0
+        ? Math.round(
+            usageRecords.reduce((sum, r) => sum + r.responseTimeMs, 0) /
+              totalRequests,
+          )
         : 0
+    const errorCount = usageRecords.filter((r) => r.statusCode >= 400).length
+    const errorRate =
+      totalRequests > 0 ? (errorCount / totalRequests) * 100 : 0
 
     return { totalRequests, totalCost, avgResponseTime, errorRate }
-  }, [consumerId, dailyUsage])
+  }, [usageRecords])
+
+  const byApiKey = useMemo(() => {
+    const keys = getApiKeysByConsumer(consumerId, { pageSize: 100 }).data
+    return keys.map((key) => {
+      const keyUsage = usageRecords.filter((r) => r.apiKeyId === key.id)
+      const revenue = keyUsage.reduce((sum, r) => {
+        const svc = getServiceById(r.serviceId)
+        return sum + (svc?.pricing.pricePerRequest ?? 0)
+      }, 0)
+      return {
+        id: key.id,
+        keyName: key.name,
+        keyPrefix: key.keyPrefix,
+        requests: keyUsage.length,
+        cost: revenue,
+        status: key.status,
+      }
+    })
+  }, [consumerId, usageRecords])
 
   const byService = useMemo(() => {
-    const usageRecords = getUsageRecords({ consumerId }).data
-    const serviceMap = new Map<string, { name: string; requestCount: number; totalCost: number }>()
+    const serviceMap = new Map<
+      string,
+      { name: string; requestCount: number; totalCost: number }
+    >()
 
     for (const record of usageRecords) {
       const existing = serviceMap.get(record.serviceId)
@@ -71,7 +105,7 @@ export function UsagePage() {
       serviceId,
       ...data,
     }))
-  }, [consumerId])
+  }, [usageRecords])
 
   return (
     <div className="space-y-6">
@@ -97,7 +131,7 @@ export function UsagePage() {
         />
         <StatCard
           label="Avg Response Time"
-          value={`${Math.round(summaryStats.avgResponseTime)}ms`}
+          value={`${summaryStats.avgResponseTime}ms`}
           icon={ClockIcon}
         />
         <StatCard
@@ -107,41 +141,66 @@ export function UsagePage() {
         />
       </div>
 
+      <ConsumptionChart
+        dailyUsage={dailyUsage}
+        onDateClick={(date) => navigate(ROUTES.CONSUMER_USAGE_DETAIL(date))}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle className="font-heading text-lg font-light">
-            Daily Usage
+            By API Key
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-2xl border border-white/[0.12]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Requests</TableHead>
-                  <TableHead className="text-right">Cost</TableHead>
-                  <TableHead className="text-right">Errors</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {dailyUsage.map((day) => (
-                  <TableRow key={day.date}>
-                    <TableCell>{day.date}</TableCell>
-                    <TableCell className="text-right">
-                      {day.requestCount.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ${day.cost.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {day.errorCount}
-                    </TableCell>
+          {byApiKey.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No usage data</p>
+          ) : (
+            <div className="rounded-2xl border border-white/[0.12]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Key Name</TableHead>
+                    <TableHead>Key Prefix</TableHead>
+                    <TableHead className="text-right">Requests</TableHead>
+                    <TableHead className="text-right">Cost</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {byApiKey.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-medium">
+                        {row.keyName}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {row.keyPrefix}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {row.requests}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${row.cost.toFixed(3)}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                            row.status === 'active'
+                              ? 'bg-green-500/15 text-green-400'
+                              : row.status === 'expired'
+                                ? 'bg-yellow-500/15 text-yellow-400'
+                                : 'bg-red-500/15 text-red-400'
+                          }`}
+                        >
+                          {row.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 

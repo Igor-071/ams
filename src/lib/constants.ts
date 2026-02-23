@@ -15,6 +15,7 @@ export const ROUTES = {
   CONSUMER_API_KEY_NEW: '/dashboard/api-keys/new',
   CONSUMER_API_KEY_DETAIL: (id: string) => `/dashboard/api-keys/${id}` as const,
   CONSUMER_USAGE: '/dashboard/usage',
+  CONSUMER_USAGE_DETAIL: (date: string) => `/dashboard/usage/${date}` as const,
   CONSUMER_SERVICES: '/dashboard/services',
   CONSUMER_SERVICE_DETAIL: (id: string) => `/dashboard/services/${id}` as const,
   CONSUMER_IMAGES: '/dashboard/images',
