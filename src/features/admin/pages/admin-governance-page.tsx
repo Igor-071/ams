@@ -21,6 +21,7 @@ const ACTION_FILTERS = [
   'merchant.suspended',
   'service.created',
   'service.approved',
+  'service.updated',
   'consumer.registered',
   'access.requested',
   'access.approved',

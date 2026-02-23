@@ -543,6 +543,22 @@ export function createService(data: {
   return service
 }
 
+// Merchant — Update service
+export function updateService(
+  serviceId: string,
+  data: Partial<Pick<Service, 'name' | 'description' | 'category' | 'tags' | 'visibility' | 'pricing' | 'rateLimitPerMinute' | 'endpoint'>>,
+  actorId: string,
+  actorName: string,
+): Service | undefined {
+  const service = mockServices.find((s) => s.id === serviceId)
+  if (!service) return undefined
+  Object.assign(service, data)
+  service.updatedAt = new Date().toISOString()
+  persistCache(CACHE_KEYS.services)
+  addAuditLog('service.updated', actorId, actorName, serviceId, 'service', `Updated service ${service.name}`, 'merchant')
+  return service
+}
+
 // Merchant — Docker images
 export function getDockerImagesByMerchant(merchantId: string): DockerImage[] {
   const merchantServiceIds = mockServices
@@ -775,7 +791,7 @@ export function getConsumerServiceUsage(
   return { totalRequests, avgResponseTimeMs, records }
 }
 
-// Admin — Audit log helper
+// Audit log helper
 function addAuditLog(
   action: AuditAction,
   actorId: string,
@@ -783,13 +799,14 @@ function addAuditLog(
   targetId: string,
   targetType: AuditLog['targetType'],
   description: string,
+  actorRole: string = 'admin',
 ): void {
   mockAuditLogs.push({
     id: `audit-${Date.now()}`,
     action,
     actorId,
     actorName,
-    actorRole: 'admin',
+    actorRole,
     targetId,
     targetType,
     description,

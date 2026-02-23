@@ -148,6 +148,14 @@ export function AdminServiceDetailPage() {
                 </div>
               </div>
             )}
+            {service.updatedAt && (
+              <div>
+                <p className="text-sm text-muted-foreground">Last Updated</p>
+                <p className="text-sm text-foreground">
+                  {new Date(service.updatedAt).toLocaleString()}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

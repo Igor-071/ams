@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import type { Role } from '@/types/user.ts'
@@ -126,5 +126,97 @@ describe('Merchant Service Management', () => {
     expect(screen.getByText('API Key Validation')).toBeInTheDocument()
     // "Rate Limit" appears in both service detail and validation chain
     expect(screen.getAllByText('Rate Limit').length).toBeGreaterThanOrEqual(1)
+  })
+
+  // AC-076: Edit button visible on service detail page
+  it('shows Edit button on service detail page', () => {
+    renderServiceDetail('svc-1')
+    expect(screen.getByRole('button', { name: /Edit/ })).toBeInTheDocument()
+  })
+
+  // AC-077: Edit mode shows form inputs and Save/Cancel buttons
+  it('shows form inputs and Save/Cancel buttons in edit mode', async () => {
+    renderServiceDetail('svc-1')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Edit/ }))
+    expect(screen.getByLabelText(/Name/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Description/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Category/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Save Changes/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Cancel/ })).toBeInTheDocument()
+  })
+
+  // AC-078: Cancel exits edit mode without saving
+  it('cancels edit mode without saving changes', async () => {
+    renderServiceDetail('svc-1')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Edit/ }))
+    const nameInput = screen.getByLabelText(/Name/)
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Changed Name')
+    await user.click(screen.getByRole('button', { name: /Cancel/ }))
+    // Back to view mode — heading still shows original name
+    expect(screen.getByRole('heading', { name: /Weather API/ })).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Name/)).not.toBeInTheDocument()
+  })
+
+  // AC-079: Save persists updated service name and shows success message
+  it('saves updated service name and shows success message', async () => {
+    renderServiceDetail('svc-1')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Edit/ }))
+    const nameInput = screen.getByLabelText(/Name/)
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Updated Weather API')
+    await user.click(screen.getByRole('button', { name: /Save Changes/ }))
+    await waitFor(() => {
+      expect(screen.getByText('Service updated successfully')).toBeInTheDocument()
+    })
+    expect(screen.getByRole('heading', { name: /Updated Weather API/ })).toBeInTheDocument()
+  })
+
+  // AC-080: Status badge unchanged after edit
+  it('keeps status unchanged after editing service', async () => {
+    renderServiceDetail('svc-1')
+    const user = userEvent.setup()
+    // svc-1 is active — StatusBadge renders "Active" (capitalized)
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Edit/ }))
+    const nameInput = screen.getByLabelText(/Name/)
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Still Active Service')
+    await user.click(screen.getByRole('button', { name: /Save Changes/ }))
+    await waitFor(() => {
+      expect(screen.getByText('Service updated successfully')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Active')).toBeInTheDocument()
+  })
+
+  // AC-081: API service edit mode shows rate limit and endpoint inputs
+  it('shows rate limit and endpoint inputs in edit mode for API service', async () => {
+    renderServiceDetail('svc-1')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Edit/ }))
+    expect(screen.getByLabelText(/Rate Limit/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Base URL/)).toBeInTheDocument()
+    // Pricing model buttons
+    expect(screen.getByRole('button', { name: 'free' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'per request' })).toBeInTheDocument()
+    // HTTP method buttons
+    expect(screen.getByRole('button', { name: 'GET' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'POST' })).toBeInTheDocument()
+  })
+
+  // AC-082: Empty name prevents save
+  it('prevents save when name is empty', async () => {
+    renderServiceDetail('svc-1')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Edit/ }))
+    const nameInput = screen.getByLabelText(/Name/)
+    await user.clear(nameInput)
+    await user.click(screen.getByRole('button', { name: /Save Changes/ }))
+    // Should still be in edit mode — no success message
+    expect(screen.queryByText('Service updated successfully')).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/Name/)).toBeInTheDocument()
   })
 })

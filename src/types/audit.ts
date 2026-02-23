@@ -7,6 +7,7 @@ export type AuditAction =
   | 'service.submitted'
   | 'service.approved'
   | 'service.rejected'
+  | 'service.updated'
   | 'service.suspended'
   | 'consumer.registered'
   | 'consumer.blocked'
