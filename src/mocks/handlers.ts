@@ -9,7 +9,7 @@ import type { ConsumptionResponse, ValidationResult } from '@/types/consumption.
 import { mockUsers, mockMerchantProfiles, mockConsumerProfiles } from './data/users.ts'
 import { mockServices, mockAccessRequests } from './data/services.ts'
 import { mockApiKeys } from './data/api-keys.ts'
-import { mockUsageRecords, mockDailyUsage } from './data/usage.ts'
+import { mockUsageRecords, mockDailyUsage, generateUsageRecordsForDate } from './data/usage.ts'
 import { mockInvoices } from './data/invoices.ts'
 import { mockAuditLogs } from './data/audit-logs.ts'
 import { mockDockerImages } from './data/docker-images.ts'
@@ -187,6 +187,41 @@ export function getUsageRecords(
 
 export function getDailyUsage(): DailyUsage[] {
   return [...mockDailyUsage]
+}
+
+export function getUsageRecordsByDate(
+  date: string,
+  params?: FilterParams,
+): PaginatedResponse<UsageRecord> {
+  const records = [...generateUsageRecordsForDate(date)]
+
+  if (params?.sortBy) {
+    const dir = params.sortOrder === 'desc' ? -1 : 1
+    const key = params.sortBy
+
+    records.sort((a, b) => {
+      let aVal: string | number
+      let bVal: string | number
+
+      if (key === 'serviceName') {
+        aVal = getServiceById(a.serviceId)?.name ?? ''
+        bVal = getServiceById(b.serviceId)?.name ?? ''
+      } else if (key === 'serviceType') {
+        aVal = getServiceById(a.serviceId)?.type ?? ''
+        bVal = getServiceById(b.serviceId)?.type ?? ''
+      } else {
+        aVal = a[key as keyof UsageRecord] as string | number
+        bVal = b[key as keyof UsageRecord] as string | number
+      }
+
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return aVal.localeCompare(bVal) * dir
+      }
+      return ((aVal as number) - (bVal as number)) * dir
+    })
+  }
+
+  return paginate(records, params?.page, params?.pageSize ?? 20)
 }
 
 // Invoices
@@ -619,6 +654,14 @@ export function simulateConsumption(apiKeyValue: string, serviceId: string): Con
   persistCache(CACHE_KEYS.usageRecords)
 
   return { success: true, statusCode: 200, validationResults: results, responseTimeMs }
+}
+
+// Merchant — All usage records across merchant's services
+export function getUsageByMerchant(merchantId: string): UsageRecord[] {
+  const merchantServiceIds = mockServices
+    .filter((s) => s.merchantId === merchantId)
+    .map((s) => s.id)
+  return mockUsageRecords.filter((u) => merchantServiceIds.includes(u.serviceId))
 }
 
 // Consumer — Services with approved access

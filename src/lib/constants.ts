@@ -32,6 +32,8 @@ export const ROUTES = {
   MERCHANT_INVOICES: '/merchant/invoices',
   MERCHANT_INVOICE_DETAIL: (id: string) =>
     `/merchant/invoices/${id}` as const,
+  MERCHANT_USAGE: '/merchant/usage',
+  MERCHANT_USAGE_DETAIL: (date: string) => `/merchant/usage/${date}` as const,
   MERCHANT_IMAGES: '/merchant/images',
 
   // Admin

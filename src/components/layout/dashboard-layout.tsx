@@ -56,6 +56,7 @@ const merchantNav: NavItem[] = [
   { label: 'Dashboard', href: ROUTES.MERCHANT_DASHBOARD, icon: LayoutDashboardIcon },
   { label: 'Services', href: ROUTES.MERCHANT_SERVICES, icon: BoxIcon },
   { label: 'Consumers', href: ROUTES.MERCHANT_CONSUMERS, icon: UsersIcon },
+  { label: 'Usage', href: ROUTES.MERCHANT_USAGE, icon: BarChart3Icon },
   { label: 'Invoices', href: ROUTES.MERCHANT_INVOICES, icon: FileTextIcon },
   { label: 'Images', href: ROUTES.MERCHANT_IMAGES, icon: ContainerIcon },
 ]

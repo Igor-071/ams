@@ -30,6 +30,8 @@ import { MerchantConsumersPage } from '@/features/merchant/pages/merchant-consum
 import { MerchantInvoicesPage } from '@/features/merchant/pages/merchant-invoices-page.tsx'
 import { MerchantInvoiceDetailPage } from '@/features/merchant/pages/merchant-invoice-detail-page.tsx'
 import { MerchantImagesPage } from '@/features/merchant/pages/merchant-images-page.tsx'
+import { MerchantUsagePage } from '@/features/merchant/pages/merchant-usage-page.tsx'
+import { MerchantUsageDetailPage } from '@/features/merchant/pages/merchant-usage-detail-page.tsx'
 import { AdminDashboardPage } from '@/features/admin/pages/admin-dashboard-page.tsx'
 import { AdminMerchantsPage } from '@/features/admin/pages/admin-merchants-page.tsx'
 import { AdminMerchantDetailPage } from '@/features/admin/pages/admin-merchant-detail-page.tsx'
@@ -102,6 +104,8 @@ export const router = createBrowserRouter([
               { path: 'merchant/consumers', element: <MerchantConsumersPage /> },
               { path: 'merchant/invoices', element: <MerchantInvoicesPage /> },
               { path: 'merchant/invoices/:invoiceId', element: <MerchantInvoiceDetailPage /> },
+              { path: 'merchant/usage', element: <MerchantUsagePage /> },
+              { path: 'merchant/usage/:date', element: <MerchantUsageDetailPage /> },
               { path: 'merchant/images', element: <MerchantImagesPage /> },
             ],
           },
