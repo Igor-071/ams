@@ -8,9 +8,28 @@ import {
   ArrowRightIcon,
   InboxIcon,
 } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { StatCard } from '@/components/shared/stat-card.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { useAuthStore } from '@/stores/auth-store.ts'
@@ -19,8 +38,51 @@ import {
   getInvoicesByMerchant,
   getUsageRecords,
   getAccessRequestsByMerchant,
+  getDailyUsageByMerchant,
 } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
+
+const activityChartConfig = {
+  requestCount: {
+    label: 'Requests',
+    color: 'var(--chart-1)',
+  },
+} satisfies ChartConfig
+
+const revenueChartConfig = {
+  cost: {
+    label: 'Revenue',
+    color: 'var(--chart-2)',
+  },
+} satisfies ChartConfig
+
+const statusChartConfig = {
+  active: { label: 'Active', color: '#4ade80' },
+  pending_approval: { label: 'Pending', color: '#fbbf24' },
+  draft: { label: 'Draft', color: '#60a5fa' },
+  suspended: { label: 'Suspended', color: '#f87171' },
+} satisfies ChartConfig
+
+const topServicesChartConfig = {
+  requests: {
+    label: 'Requests',
+    color: 'var(--chart-1)',
+  },
+} satisfies ChartConfig
+
+const STATUS_COLORS: Record<string, string> = {
+  active: '#4ade80',
+  pending_approval: '#fbbf24',
+  draft: '#60a5fa',
+  suspended: '#f87171',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Active',
+  pending_approval: 'Pending',
+  draft: 'Draft',
+  suspended: 'Suspended',
+}
 
 export function MerchantDashboardPage() {
   const { currentUser } = useAuthStore()
@@ -49,8 +111,13 @@ export function MerchantDashboardPage() {
     [accessRequests],
   )
 
+  const merchantServices = useMemo(
+    () => getServicesByMerchant(merchantId, { pageSize: 1000 }).data,
+    [merchantId],
+  )
+
   const stats = useMemo(() => {
-    const services = getServicesByMerchant(merchantId).data
+    const services = merchantServices
     const serviceIds = services.map((s) => s.id)
 
     const activeConsumers = new Set(
@@ -72,7 +139,35 @@ export function MerchantDashboardPage() {
       totalRequests,
       revenue,
     }
-  }, [merchantId, accessRequests])
+  }, [merchantId, accessRequests, merchantServices])
+
+  const last30Days = useMemo(
+    () => getDailyUsageByMerchant(merchantId).slice(-30),
+    [merchantId],
+  )
+
+  const serviceStatusData = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const svc of merchantServices) {
+      counts[svc.status] = (counts[svc.status] ?? 0) + 1
+    }
+    return Object.entries(counts).map(([status, value]) => ({
+      name: STATUS_LABELS[status] ?? status,
+      value,
+      color: STATUS_COLORS[status] ?? '#7B83A0',
+      status,
+    }))
+  }, [merchantServices])
+
+  const topServices = useMemo(() => {
+    return merchantServices
+      .map((svc) => ({
+        name: svc.name,
+        requests: getUsageRecords({ serviceId: svc.id }).total,
+      }))
+      .sort((a, b) => b.requests - a.requests)
+      .slice(0, 5)
+  }, [merchantServices])
 
   return (
     <div className="space-y-6">
@@ -87,6 +182,175 @@ export function MerchantDashboardPage() {
           value={`$${stats.revenue.toFixed(2)}`}
           icon={DollarSignIcon}
         />
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-lg font-light">
+              Service Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div data-testid="service-activity-chart">
+              <ChartContainer config={activityChartConfig} className="h-[250px] w-full">
+                <AreaChart data={last30Days} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fillMerchantActivity" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={45}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area
+                    type="monotone"
+                    dataKey="requestCount"
+                    stroke="var(--chart-1)"
+                    strokeWidth={2}
+                    fill="url(#fillMerchantActivity)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-lg font-light">
+              Revenue Trend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div data-testid="revenue-trend-chart">
+              <ChartContainer config={revenueChartConfig} className="h-[250px] w-full">
+                <AreaChart data={last30Days} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fillMerchantRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tickFormatter={(value: number) => `$${value}`}
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={55}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        formatter={(value) => `$${(value as number).toFixed(2)}`}
+                      />
+                    }
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="cost"
+                    stroke="var(--chart-2)"
+                    strokeWidth={2}
+                    fill="url(#fillMerchantRevenue)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-lg font-light">
+              Service Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div data-testid="service-status-chart">
+              <ChartContainer config={statusChartConfig} className="h-[250px] w-full">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Pie
+                    data={serviceStatusData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={2}
+                    label={({ name, value }: { name: string; value: number }) => `${name}: ${value}`}
+                    labelLine={false}
+                  >
+                    {serviceStatusData.map((entry) => (
+                      <Cell key={entry.status} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-lg font-light">
+              Top Services
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div data-testid="top-services-chart">
+              <ChartContainer config={topServicesChartConfig} className="h-[250px] w-full">
+                <BarChart
+                  data={topServices}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={120}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="requests" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

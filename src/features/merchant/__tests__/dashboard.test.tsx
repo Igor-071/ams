@@ -1,9 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import type { Role } from '@/types/user.ts'
 import { useAuthStore } from '@/stores/auth-store.ts'
 import { MerchantDashboardPage } from '../pages/merchant-dashboard-page.tsx'
+
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts')
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 800, height: 300 }}>{children}</div>
+    ),
+  }
+})
 
 function renderWithRouter(initialEntry = '/merchant') {
   const router = createMemoryRouter(
@@ -68,6 +78,30 @@ describe('Merchant Dashboard Overview', () => {
     // merchant-1 has services svc-1, svc-2, svc-6
     // ar-1 (Alice, svc-1, approved), ar-2 (Alice, svc-2, approved), ar-4 (Dave, svc-1, approved)
     expect(screen.getByText('Recently Resolved')).toBeInTheDocument()
+  })
+
+  it('renders Service Activity chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Service Activity')).toBeInTheDocument()
+    expect(screen.getByTestId('service-activity-chart')).toBeInTheDocument()
+  })
+
+  it('renders Revenue Trend chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Revenue Trend')).toBeInTheDocument()
+    expect(screen.getByTestId('revenue-trend-chart')).toBeInTheDocument()
+  })
+
+  it('renders Service Status chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Service Status')).toBeInTheDocument()
+    expect(screen.getByTestId('service-status-chart')).toBeInTheDocument()
+  })
+
+  it('renders Top Services chart', () => {
+    renderWithRouter()
+    expect(screen.getByText('Top Services')).toBeInTheDocument()
+    expect(screen.getByTestId('top-services-chart')).toBeInTheDocument()
   })
 })
 
