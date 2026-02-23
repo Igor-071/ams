@@ -66,6 +66,7 @@ const adminNav: NavItem[] = [
   { label: 'Merchants', href: ROUTES.ADMIN_MERCHANTS, icon: StoreIcon },
   { label: 'Consumers', href: ROUTES.ADMIN_CONSUMERS, icon: UsersIcon },
   { label: 'Services', href: ROUTES.ADMIN_SERVICES, icon: BoxIcon },
+  { label: 'Usage', href: ROUTES.ADMIN_USAGE, icon: BarChart3Icon },
   { label: 'Governance', href: ROUTES.ADMIN_GOVERNANCE, icon: ScrollTextIcon },
 ]
 

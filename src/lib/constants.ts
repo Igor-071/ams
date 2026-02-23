@@ -46,6 +46,8 @@ export const ROUTES = {
   ADMIN_SERVICES: '/admin/services',
   ADMIN_SERVICE_DETAIL: (id: string) => `/admin/services/${id}` as const,
   ADMIN_GOVERNANCE: '/admin/governance',
+  ADMIN_USAGE: '/admin/usage',
+  ADMIN_USAGE_DETAIL: (date: string) => `/admin/usage/${date}` as const,
 } as const
 
 export const ROLE_HOME: Record<Role, string> = {

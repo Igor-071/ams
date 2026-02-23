@@ -41,6 +41,8 @@ import { AdminConsumerDetailPage } from '@/features/admin/pages/admin-consumer-d
 import { AdminServicesPage } from '@/features/admin/pages/admin-services-page.tsx'
 import { AdminServiceDetailPage } from '@/features/admin/pages/admin-service-detail-page.tsx'
 import { AdminGovernancePage } from '@/features/admin/pages/admin-governance-page.tsx'
+import { AdminUsagePage } from '@/features/admin/pages/admin-usage-page.tsx'
+import { AdminUsageDetailPage } from '@/features/admin/pages/admin-usage-detail-page.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -128,6 +130,8 @@ export const router = createBrowserRouter([
               { path: 'admin/consumers/:consumerId', element: <AdminConsumerDetailPage /> },
               { path: 'admin/services', element: <AdminServicesPage /> },
               { path: 'admin/services/:serviceId', element: <AdminServiceDetailPage /> },
+              { path: 'admin/usage', element: <AdminUsagePage /> },
+              { path: 'admin/usage/:date', element: <AdminUsageDetailPage /> },
               { path: 'admin/governance', element: <AdminGovernancePage /> },
             ],
           },

@@ -209,6 +209,9 @@ export function getUsageRecordsByDate(
       } else if (key === 'serviceType') {
         aVal = getServiceById(a.serviceId)?.type ?? ''
         bVal = getServiceById(b.serviceId)?.type ?? ''
+      } else if (key === 'merchantName') {
+        aVal = getServiceById(a.serviceId)?.merchantName ?? ''
+        bVal = getServiceById(b.serviceId)?.merchantName ?? ''
       } else {
         aVal = a[key as keyof UsageRecord] as string | number
         bVal = b[key as keyof UsageRecord] as string | number
