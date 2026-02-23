@@ -1,9 +1,20 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import type { Role } from '@/types/user.ts'
 import { useAuthStore } from '@/stores/auth-store.ts'
 import { AdminDashboardPage } from '../pages/admin-dashboard-page.tsx'
+
+// Mock ResponsiveContainer to avoid zero-size issues in jsdom
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts')
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 800, height: 300 }}>{children}</div>
+    ),
+  }
+})
 
 function renderWithRouter() {
   const router = createMemoryRouter(
@@ -61,5 +72,34 @@ describe('Admin Dashboard Overview', () => {
     expect(consumersLink).toHaveAttribute('href', '/admin/consumers')
     expect(servicesLink).toHaveAttribute('href', '/admin/services')
     expect(governanceLink).toHaveAttribute('href', '/admin/governance')
+  })
+
+  // Dashboard charts
+  it('renders Platform Activity chart', () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderWithRouter()
+    expect(screen.getByText('Platform Activity')).toBeInTheDocument()
+    expect(screen.getByTestId('platform-activity-chart')).toBeInTheDocument()
+  })
+
+  it('renders Revenue Trend chart', () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderWithRouter()
+    expect(screen.getByText('Revenue Trend')).toBeInTheDocument()
+    expect(screen.getByTestId('revenue-trend-chart')).toBeInTheDocument()
+  })
+
+  it('renders Service Status chart', () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderWithRouter()
+    expect(screen.getByText('Service Status')).toBeInTheDocument()
+    expect(screen.getByTestId('service-status-chart')).toBeInTheDocument()
+  })
+
+  it('renders Top Merchants chart', () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderWithRouter()
+    expect(screen.getByText('Top Merchants')).toBeInTheDocument()
+    expect(screen.getByTestId('top-merchants-chart')).toBeInTheDocument()
   })
 })
