@@ -1,5 +1,9 @@
 import { useState, useMemo } from 'react'
+import type { DateRange } from 'react-day-picker'
 import { PageHeader } from '@/components/shared/page-header.tsx'
+import { ReportActions } from '@/components/shared/report-actions.tsx'
+import { DateRangeFilter } from '@/components/shared/date-range-filter.tsx'
+import { toCsvString, downloadCsv, type CsvColumn } from '@/lib/csv-export.ts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Input } from '@/components/ui/input.tsx'
@@ -44,13 +48,40 @@ const ACTION_OPTIONS = [
 export function AdminGovernancePage() {
   const [actionFilter, setActionFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: undefined,
+    to: undefined,
+  })
 
-  const logs = useMemo(() => {
+  const allLogs = useMemo(() => {
     const params: { action?: string; search?: string; pageSize: number } = { pageSize: 1000 }
     if (actionFilter !== 'all') params.action = actionFilter
     if (search.trim()) params.search = search.trim()
     return getAuditLogs(params).data
   }, [actionFilter, search])
+
+  const logs = useMemo(() => {
+    if (!dateRange.from) return allLogs
+    return allLogs.filter((log) => {
+      const ts = new Date(log.timestamp)
+      if (dateRange.from && ts < dateRange.from) return false
+      if (dateRange.to && ts > dateRange.to) return false
+      return true
+    })
+  }, [allLogs, dateRange])
+
+  const handleExport = () => {
+    const columns: CsvColumn<(typeof logs)[0]>[] = [
+      { header: 'Action', accessor: (r) => r.action },
+      { header: 'Actor', accessor: (r) => r.actorName },
+      { header: 'Description', accessor: (r) => r.description },
+      { header: 'Timestamp', accessor: (r) => new Date(r.timestamp).toLocaleString() },
+    ]
+    downloadCsv(toCsvString(columns, logs), 'admin-audit-logs.csv')
+  }
+
+  const generateSummary = () =>
+    `Audit Log Report\nTotal Entries: ${logs.length}\nFilters: ${actionFilter === 'all' ? 'All Actions' : actionFilter}${search ? `, Search: "${search}"` : ''}`
 
   return (
     <div className="space-y-6">
@@ -61,6 +92,7 @@ export function AdminGovernancePage() {
           { label: 'Admin', href: ROUTES.ADMIN_DASHBOARD },
           { label: 'Governance' },
         ]}
+        actions={<ReportActions onExport={handleExport} generateSummary={generateSummary} />}
       />
 
       <Card>
@@ -96,6 +128,7 @@ export function AdminGovernancePage() {
               </select>
               <ChevronDownIcon className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             </div>
+            <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
           </div>
 
           <div className="rounded-2xl border border-white/[0.12]">

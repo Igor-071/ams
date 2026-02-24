@@ -3,6 +3,8 @@ import { useParams } from 'react-router'
 import { format, parseISO } from 'date-fns'
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
+import { ReportActions } from '@/components/shared/report-actions.tsx'
+import { toCsvString, downloadCsv, type CsvColumn } from '@/lib/csv-export.ts'
 import { Pagination } from '@/components/shared/pagination.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import {
@@ -72,6 +74,34 @@ export function AdminUsageDetailPage() {
     [date, page, sortBy, sortDir],
   )
 
+  const allRecordsForExport = useMemo(
+    () =>
+      getUsageRecordsByDate(date ?? '', {
+        page: 1,
+        pageSize: 10000,
+        sortBy,
+        sortOrder: sortDir,
+      }),
+    [date, sortBy, sortDir],
+  )
+
+  const handleExport = () => {
+    const columns: CsvColumn<(typeof allRecordsForExport.data)[0]>[] = [
+      { header: 'Consumer', accessor: (r) => r.consumerId },
+      { header: 'Merchant', accessor: (r) => getServiceById(r.serviceId)?.merchantName ?? 'Unknown' },
+      { header: 'Request Size', accessor: (r) => r.requestPayloadSize },
+      { header: 'Response Size', accessor: (r) => r.responsePayloadSize },
+      { header: 'Timestamp', accessor: (r) => r.timestamp },
+      { header: 'Status Code', accessor: (r) => r.statusCode },
+      { header: 'Service Name', accessor: (r) => getServiceById(r.serviceId)?.name ?? 'Unknown' },
+      { header: 'Service Type', accessor: (r) => getServiceById(r.serviceId)?.type === 'docker' ? 'Docker' : 'API' },
+    ]
+    downloadCsv(toCsvString(columns, allRecordsForExport.data), `admin-usage-${date}.csv`)
+  }
+
+  const generateSummary = () =>
+    `Admin Usage Detail — ${date}\nTotal Requests: ${result.total.toLocaleString()}`
+
   const isValidDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date)
   const formattedDate = isValidDate
     ? format(parseISO(date), 'MMMM d, yyyy')
@@ -109,6 +139,7 @@ export function AdminUsageDetailPage() {
           { label: 'Usage', href: ROUTES.ADMIN_USAGE },
           { label: formattedDate },
         ]}
+        actions={<ReportActions onExport={handleExport} generateSummary={generateSummary} />}
       />
 
       <Card>

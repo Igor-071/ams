@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import type { Role } from '@/types/user.ts'
 import { useAuthStore } from '@/stores/auth-store.ts'
@@ -76,5 +77,34 @@ describe('Usage Dashboard', () => {
     const pickerButton = screen.getByRole('button', { name: /Select date range/ })
     expect(pickerButton).toBeInTheDocument()
     expect(pickerButton).toHaveTextContent('This Month')
+  })
+
+  it('renders Export CSV and Share buttons in page header', () => {
+    renderUsagePage()
+    expect(screen.getByRole('button', { name: /Export CSV/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Share report/i })).toBeInTheDocument()
+  })
+
+  it('triggers CSV download when Export CSV is clicked', async () => {
+    const user = userEvent.setup()
+    renderUsagePage()
+
+    const clickMock = vi.fn()
+    const createObjectURLMock = vi.fn().mockReturnValue('blob:test')
+    const revokeObjectURLMock = vi.fn()
+    vi.stubGlobal('URL', { createObjectURL: createObjectURLMock, revokeObjectURL: revokeObjectURLMock })
+    const origCreateElement = document.createElement.bind(document)
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      if (tag === 'a') {
+        return { href: '', download: '', click: clickMock } as unknown as HTMLAnchorElement
+      }
+      return origCreateElement(tag)
+    })
+
+    await user.click(screen.getByRole('button', { name: /Export CSV/i }))
+    expect(createObjectURLMock).toHaveBeenCalledWith(expect.any(Blob))
+    expect(clickMock).toHaveBeenCalledOnce()
+
+    vi.restoreAllMocks()
   })
 })

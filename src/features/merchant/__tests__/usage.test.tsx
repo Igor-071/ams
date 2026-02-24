@@ -168,4 +168,33 @@ describe('Merchant Usage Page', () => {
     renderUsagePage()
     expect(screen.getByTestId('consumption-chart')).toBeInTheDocument()
   })
+
+  it('renders Export CSV and Share buttons in page header', () => {
+    renderUsagePage()
+    expect(screen.getByRole('button', { name: /Export CSV/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Share report/i })).toBeInTheDocument()
+  })
+
+  it('triggers CSV download when Export CSV is clicked', async () => {
+    const user = userEvent.setup()
+    renderUsagePage()
+
+    const clickMock = vi.fn()
+    const createObjectURLMock = vi.fn().mockReturnValue('blob:test')
+    const revokeObjectURLMock = vi.fn()
+    vi.stubGlobal('URL', { createObjectURL: createObjectURLMock, revokeObjectURL: revokeObjectURLMock })
+    const origCreateElement = document.createElement.bind(document)
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      if (tag === 'a') {
+        return { href: '', download: '', click: clickMock } as unknown as HTMLAnchorElement
+      }
+      return origCreateElement(tag)
+    })
+
+    await user.click(screen.getByRole('button', { name: /Export CSV/i }))
+    expect(createObjectURLMock).toHaveBeenCalledWith(expect.any(Blob))
+    expect(clickMock).toHaveBeenCalledOnce()
+
+    vi.restoreAllMocks()
+  })
 })

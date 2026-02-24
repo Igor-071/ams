@@ -10,6 +10,8 @@ import {
   CheckIcon,
 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
+import { ReportActions } from '@/components/shared/report-actions.tsx'
+import { toCsvString, downloadCsv, type CsvColumn } from '@/lib/csv-export.ts'
 import { StatCard } from '@/components/shared/stat-card.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import {
@@ -133,6 +135,21 @@ export function MerchantUsagePage() {
 
   const dailyUsage = useMemo(() => getDailyUsage(), [])
 
+  const handleExport = () => {
+    const columns: CsvColumn<(typeof byApiKey)[0]>[] = [
+      { header: 'Key Name', accessor: (r) => r.keyName },
+      { header: 'Key Prefix', accessor: (r) => r.keyPrefix },
+      { header: 'Service', accessor: (r) => r.serviceName },
+      { header: 'Requests', accessor: (r) => r.requests },
+      { header: 'Revenue', accessor: (r) => `$${r.revenue.toFixed(3)}` },
+      { header: 'Status', accessor: (r) => r.status },
+    ]
+    downloadCsv(toCsvString(columns, byApiKey), 'merchant-usage-by-api-key.csv')
+  }
+
+  const generateSummary = () =>
+    `Merchant Usage Report\nTotal Requests: ${stats.totalRequests.toLocaleString()}\nTotal Revenue: $${stats.totalRevenue.toFixed(3)}\nAvg Response Time: ${stats.avgResponseTime}ms\nError Rate: ${stats.errorRate.toFixed(1)}%`
+
   const recentRequests = useMemo(
     () =>
       [...filteredRecords].sort(
@@ -151,6 +168,7 @@ export function MerchantUsagePage() {
           { label: 'Dashboard', href: ROUTES.MERCHANT_DASHBOARD },
           { label: 'Usage' },
         ]}
+        actions={<ReportActions onExport={handleExport} generateSummary={generateSummary} />}
       />
 
       {/* Service filter dropdown */}

@@ -7,6 +7,8 @@ import {
   AlertCircleIcon,
 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
+import { ReportActions } from '@/components/shared/report-actions.tsx'
+import { toCsvString, downloadCsv, type CsvColumn } from '@/lib/csv-export.ts'
 import { StatCard } from '@/components/shared/stat-card.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import {
@@ -150,6 +152,44 @@ export function AdminUsagePage() {
     return Array.from(map.values())
   }, [allRecords])
 
+  const handleExport = () => {
+    let csv = ''
+    // By Merchant section
+    const merchantCols: CsvColumn<(typeof byMerchant)[0]>[] = [
+      { header: 'Name', accessor: (r) => r.name },
+      { header: 'Company', accessor: (r) => r.company },
+      { header: 'Requests', accessor: (r) => r.requests },
+      { header: 'Revenue', accessor: (r) => `$${r.revenue.toFixed(3)}` },
+      { header: 'Status', accessor: (r) => r.status },
+    ]
+    csv += '--- By Merchant ---\n' + toCsvString(merchantCols, byMerchant)
+
+    // By Consumer section
+    const consumerCols: CsvColumn<(typeof byConsumer)[0]>[] = [
+      { header: 'Name', accessor: (r) => r.name },
+      { header: 'Organization', accessor: (r) => r.organization },
+      { header: 'Requests', accessor: (r) => r.requests },
+      { header: 'Cost', accessor: (r) => `$${r.cost.toFixed(3)}` },
+      { header: 'Status', accessor: (r) => r.status },
+    ]
+    csv += '\n\n--- By Consumer ---\n' + toCsvString(consumerCols, byConsumer)
+
+    // By Service section
+    const serviceCols: CsvColumn<(typeof byService)[0]>[] = [
+      { header: 'Service Name', accessor: (r) => r.name },
+      { header: 'Merchant', accessor: (r) => r.merchantName },
+      { header: 'Type', accessor: (r) => r.type === 'docker' ? 'Docker' : 'API' },
+      { header: 'Requests', accessor: (r) => r.requests },
+      { header: 'Revenue', accessor: (r) => `$${r.revenue.toFixed(3)}` },
+    ]
+    csv += '\n\n--- By Service ---\n' + toCsvString(serviceCols, byService)
+
+    downloadCsv(csv, 'admin-platform-usage.csv')
+  }
+
+  const generateSummary = () =>
+    `Platform Usage Report\nTotal Requests: ${stats.totalRequests.toLocaleString()}\nTotal Revenue: $${stats.totalRevenue.toFixed(3)}\nAvg Response Time: ${stats.avgResponseTime}ms\nError Rate: ${stats.errorRate.toFixed(1)}%`
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -159,6 +199,7 @@ export function AdminUsagePage() {
           { label: 'Dashboard', href: ROUTES.ADMIN_DASHBOARD },
           { label: 'Usage' },
         ]}
+        actions={<ReportActions onExport={handleExport} generateSummary={generateSummary} />}
       />
 
       {/* Stat cards */}

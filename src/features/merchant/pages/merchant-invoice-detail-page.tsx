@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router'
 import { PageHeader } from '@/components/shared/page-header.tsx'
+import { ReportActions } from '@/components/shared/report-actions.tsx'
+import { toCsvString, downloadCsv, type CsvColumn } from '@/lib/csv-export.ts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
@@ -25,6 +27,34 @@ function invoiceStatusToStatus(status: string): string {
 export function MerchantInvoiceDetailPage() {
   const { invoiceId } = useParams<{ invoiceId: string }>()
   const invoice = useMemo(() => getInvoiceById(invoiceId ?? ''), [invoiceId])
+
+  const handleExport = () => {
+    if (!invoice) return
+    interface LineItemRow { serviceName: string; requestCount: number; unitPrice: string; subtotal: string }
+    const lineItems: LineItemRow[] = invoice.lineItems.map((item) => ({
+      serviceName: item.serviceName,
+      requestCount: item.requestCount,
+      unitPrice: `$${item.unitPrice.toFixed(3)}`,
+      subtotal: `$${item.subtotal.toFixed(2)}`,
+    }))
+    lineItems.push(
+      { serviceName: '', requestCount: 0, unitPrice: 'Subtotal', subtotal: `$${invoice.subtotal.toFixed(2)}` },
+      { serviceName: '', requestCount: 0, unitPrice: `Commission (${(invoice.commissionRate * 100).toFixed(0)}%)`, subtotal: `-$${invoice.commission.toFixed(2)}` },
+      { serviceName: '', requestCount: 0, unitPrice: 'Total (Net)', subtotal: `$${invoice.total.toFixed(2)}` },
+    )
+    const columns: CsvColumn<LineItemRow>[] = [
+      { header: 'Service', accessor: (r) => r.serviceName },
+      { header: 'Requests', accessor: (r) => r.requestCount },
+      { header: 'Unit Price', accessor: (r) => r.unitPrice },
+      { header: 'Subtotal', accessor: (r) => r.subtotal },
+    ]
+    downloadCsv(toCsvString(columns, lineItems), `invoice-${invoice.period}.csv`)
+  }
+
+  const generateSummary = () => {
+    if (!invoice) return ''
+    return `Invoice — ${invoice.period}\nConsumer: ${invoice.consumerName}\nStatus: ${invoice.status}\nSubtotal: $${invoice.subtotal.toFixed(2)}\nCommission: -$${invoice.commission.toFixed(2)}\nTotal: $${invoice.total.toFixed(2)}`
+  }
 
   if (!invoice) {
     return (
@@ -51,6 +81,7 @@ export function MerchantInvoiceDetailPage() {
           { label: 'Invoices', href: ROUTES.MERCHANT_INVOICES },
           { label: invoice.period },
         ]}
+        actions={<ReportActions onExport={handleExport} generateSummary={generateSummary} />}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">

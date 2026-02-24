@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import type { Role } from '@/types/user.ts'
 import { useAuthStore } from '@/stores/auth-store.ts'
@@ -68,5 +69,30 @@ describe('Merchant Invoicing', () => {
     expect(screen.getByText(/AMS Commission/)).toBeInTheDocument()
     expect(screen.getByText(/10%/)).toBeInTheDocument()
     expect(screen.getByText('-$0.70')).toBeInTheDocument()
+  })
+
+  // AC-DRF-01: Invoices page has date range filter
+  it('renders date range filter with default "All Time" label', () => {
+    renderInvoicesPage()
+    const trigger = screen.getByRole('button', { name: /Filter by date range/ })
+    expect(trigger).toBeInTheDocument()
+    expect(trigger).toHaveTextContent('All Time')
+  })
+
+  // AC-DRF-02: Date range filter opens with presets
+  it('opens date range popover with preset buttons', async () => {
+    const user = userEvent.setup()
+    renderInvoicesPage()
+    await user.click(screen.getByRole('button', { name: /Filter by date range/ }))
+    expect(screen.getByText('3 Months')).toBeInTheDocument()
+    expect(screen.getByText('6 Months')).toBeInTheDocument()
+    expect(screen.getByText('This Year')).toBeInTheDocument()
+  })
+
+  // AC-EXP-03: Invoices export button
+  it('renders Export CSV and Share buttons on invoices page', () => {
+    renderInvoicesPage()
+    expect(screen.getByRole('button', { name: /Export CSV/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Share report/i })).toBeInTheDocument()
   })
 })

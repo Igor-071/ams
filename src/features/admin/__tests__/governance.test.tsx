@@ -77,4 +77,36 @@ describe('Admin Governance', () => {
     expect(screen.getByText('TBD')).toBeInTheDocument()
     expect(screen.getByText(/Platform configuration coming soon/)).toBeInTheDocument()
   })
+
+  // AC-DRF-03: Governance page has date range filter
+  it('renders date range filter with "All Time" default in filter bar', () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderGovernancePage()
+    const trigger = screen.getByRole('button', { name: /Filter by date range/ })
+    expect(trigger).toBeInTheDocument()
+    expect(trigger).toHaveTextContent('All Time')
+  })
+
+  // AC-DRF-04: Date range combines with existing filters
+  it('date range filter works alongside action filter and search', async () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderGovernancePage()
+    const user = userEvent.setup()
+
+    // Apply action filter
+    const select = screen.getByLabelText('Filter by action')
+    await user.selectOptions(select, 'merchant.invited')
+    expect(screen.getByText('Invited ACME APIs as merchant')).toBeInTheDocument()
+
+    // Date range filter should still be present
+    expect(screen.getByRole('button', { name: /Filter by date range/ })).toBeInTheDocument()
+  })
+
+  // AC-EXP-09: Governance export button
+  it('renders Export CSV and Share buttons', () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderGovernancePage()
+    expect(screen.getByRole('button', { name: /Export CSV/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Share report/i })).toBeInTheDocument()
+  })
 })

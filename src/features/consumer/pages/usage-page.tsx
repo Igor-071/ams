@@ -7,6 +7,8 @@ import {
   AlertCircleIcon,
 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
+import { ReportActions } from '@/components/shared/report-actions.tsx'
+import { toCsvString, downloadCsv, type CsvColumn } from '@/lib/csv-export.ts'
 import { StatCard } from '@/components/shared/stat-card.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import {
@@ -107,6 +109,20 @@ export function UsagePage() {
     }))
   }, [usageRecords])
 
+  const handleExport = () => {
+    const columns: CsvColumn<(typeof byApiKey)[0]>[] = [
+      { header: 'Key Name', accessor: (r) => r.keyName },
+      { header: 'Key Prefix', accessor: (r) => r.keyPrefix },
+      { header: 'Requests', accessor: (r) => r.requests },
+      { header: 'Cost', accessor: (r) => `$${r.cost.toFixed(3)}` },
+      { header: 'Status', accessor: (r) => r.status },
+    ]
+    downloadCsv(toCsvString(columns, byApiKey), 'consumer-usage-by-api-key.csv')
+  }
+
+  const generateSummary = () =>
+    `Consumer Usage Report\nTotal Requests: ${summaryStats.totalRequests.toLocaleString()}\nTotal Cost: $${summaryStats.totalCost.toFixed(2)}\nAvg Response Time: ${summaryStats.avgResponseTime}ms\nError Rate: ${summaryStats.errorRate.toFixed(1)}%`
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -116,6 +132,7 @@ export function UsagePage() {
           { label: 'Dashboard', href: ROUTES.CONSUMER_DASHBOARD },
           { label: 'Usage' },
         ]}
+        actions={<ReportActions onExport={handleExport} generateSummary={generateSummary} />}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
