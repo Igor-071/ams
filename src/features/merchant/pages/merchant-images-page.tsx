@@ -118,7 +118,7 @@ export function MerchantImagesPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter by status"
-            className="h-10 appearance-none rounded-full border border-white/20 bg-card pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="glass-select h-10 appearance-none rounded-full pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -132,7 +132,7 @@ export function MerchantImagesPage() {
             value={licensingFilter}
             onChange={(e) => setLicensingFilter(e.target.value)}
             aria-label="Filter by licensing model"
-            className="h-10 appearance-none rounded-full border border-white/20 bg-card pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="glass-select h-10 appearance-none rounded-full pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           >
             <option value="all">All Licensing</option>
             <option value="online">Online</option>

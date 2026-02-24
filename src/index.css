@@ -151,6 +151,17 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Glass select dropdown */
+  .glass-select {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .glass-select option {
+    background: #141827;
+    color: #E0E4F0;
+  }
+
   /* Card shadow (Ahoy-style deep blue tinted shadow) */
   .shadow-card {
     box-shadow: 0 25px 50px -12px rgba(27, 56, 142, 0.1);

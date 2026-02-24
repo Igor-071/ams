@@ -118,7 +118,7 @@ export function AdminGovernancePage() {
                 value={actionFilter}
                 onChange={(e) => setActionFilter(e.target.value)}
                 aria-label="Filter by action"
-                className="h-10 appearance-none rounded-full border border-white/20 bg-card pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                className="glass-select h-10 appearance-none rounded-full pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 {ACTION_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
