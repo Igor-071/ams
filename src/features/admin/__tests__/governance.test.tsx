@@ -40,20 +40,33 @@ describe('Admin Governance', () => {
     expect(screen.getByText('Timestamp')).toBeInTheDocument()
   })
 
-  // AC-101: Action filter
-  it('filters audit logs by action type', async () => {
+  // AC-101: Action filter via dropdown
+  it('filters audit logs by action type using dropdown', async () => {
     useAuthStore.getState().login(mockAdmin)
     renderGovernancePage()
     const user = userEvent.setup()
-    // Click on "merchant.invited" filter
-    await user.click(screen.getByRole('button', { name: 'merchant.invited' }))
+    // Select "merchant.invited" from dropdown
+    const select = screen.getByLabelText('Filter by action')
+    await user.selectOptions(select, 'merchant.invited')
     // Only merchant.invited logs should show
     expect(screen.getByText('Invited ACME APIs as merchant')).toBeInTheDocument()
     // Other actions should not be visible
     expect(screen.queryByText('Revoked API key for consumer')).not.toBeInTheDocument()
-    // Click "All" to show all logs again
-    await user.click(screen.getByRole('button', { name: 'All' }))
+    // Select "All Actions" to show all logs again
+    await user.selectOptions(select, 'all')
     expect(screen.getByText('Revoked API key for consumer')).toBeInTheDocument()
+  })
+
+  // AC-101b: Search filter
+  it('filters audit logs by search text', async () => {
+    useAuthStore.getState().login(mockAdmin)
+    renderGovernancePage()
+    const user = userEvent.setup()
+    const searchInput = screen.getByLabelText('Search audit logs')
+    await user.type(searchInput, 'ACME')
+    // Only logs matching "ACME" should show
+    expect(screen.getByText('Invited ACME APIs as merchant')).toBeInTheDocument()
+    expect(screen.queryByText('Revoked API key for consumer')).not.toBeInTheDocument()
   })
 
   // AC-102: Platform config stub

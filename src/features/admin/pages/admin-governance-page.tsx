@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
-import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { ChevronDownIcon, SearchIcon } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -14,29 +15,31 @@ import {
 import { getAuditLogs } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
 
-const ACTION_FILTERS = [
-  'all',
-  'merchant.invited',
-  'merchant.registered',
-  'merchant.suspended',
-  'service.created',
-  'service.approved',
-  'service.updated',
-  'consumer.registered',
-  'access.requested',
-  'access.approved',
-  'apikey.created',
-  'apikey.revoked',
+const ACTION_OPTIONS = [
+  { value: 'all', label: 'All Actions' },
+  { value: 'merchant.invited', label: 'merchant.invited' },
+  { value: 'merchant.registered', label: 'merchant.registered' },
+  { value: 'merchant.suspended', label: 'merchant.suspended' },
+  { value: 'service.created', label: 'service.created' },
+  { value: 'service.approved', label: 'service.approved' },
+  { value: 'service.updated', label: 'service.updated' },
+  { value: 'consumer.registered', label: 'consumer.registered' },
+  { value: 'access.requested', label: 'access.requested' },
+  { value: 'access.approved', label: 'access.approved' },
+  { value: 'apikey.created', label: 'apikey.created' },
+  { value: 'apikey.revoked', label: 'apikey.revoked' },
 ] as const
 
 export function AdminGovernancePage() {
   const [actionFilter, setActionFilter] = useState('all')
+  const [search, setSearch] = useState('')
 
   const logs = useMemo(() => {
-    const params: { action?: string; pageSize: number } = { pageSize: 1000 }
+    const params: { action?: string; search?: string; pageSize: number } = { pageSize: 1000 }
     if (actionFilter !== 'all') params.action = actionFilter
+    if (search.trim()) params.search = search.trim()
     return getAuditLogs(params).data
-  }, [actionFilter])
+  }, [actionFilter, search])
 
   return (
     <div className="space-y-6">
@@ -56,18 +59,32 @@ export function AdminGovernancePage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {ACTION_FILTERS.map((filter) => (
-              <Button
-                key={filter}
-                variant={actionFilter === filter ? 'default' : 'outline'}
-                size="sm"
-                className="rounded-full text-xs"
-                onClick={() => setActionFilter(filter)}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search logs..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+                aria-label="Search audit logs"
+              />
+            </div>
+            <div className="relative">
+              <select
+                value={actionFilter}
+                onChange={(e) => setActionFilter(e.target.value)}
+                aria-label="Filter by action"
+                className="h-10 appearance-none rounded-full border border-white/20 bg-card pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               >
-                {filter === 'all' ? 'All' : filter}
-              </Button>
-            ))}
+                {ACTION_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            </div>
           </div>
 
           <div className="rounded-2xl border border-white/[0.12]">
