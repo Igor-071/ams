@@ -16,6 +16,7 @@ const STEP_LABELS: Record<ValidationStep, string> = {
   api_key_validation: 'API Key Validation',
   ttl_check: 'TTL Check',
   service_authorization: 'Service Authorization',
+  service_block_check: 'Service Block Check',
   merchant_config_check: 'Merchant Config',
   rate_limit_check: 'Rate Limit',
 }
@@ -24,6 +25,7 @@ const ALL_STEPS: ValidationStep[] = [
   'api_key_validation',
   'ttl_check',
   'service_authorization',
+  'service_block_check',
   'merchant_config_check',
   'rate_limit_check',
 ]

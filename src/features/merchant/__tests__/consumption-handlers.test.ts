@@ -38,7 +38,7 @@ describe('Consumption Handlers', () => {
     const result = simulateConsumption('ams_live_k1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6', 'svc-1')
     expect(result.success).toBe(true)
     expect(result.statusCode).toBe(200)
-    expect(result.validationResults).toHaveLength(5)
+    expect(result.validationResults).toHaveLength(6)
     expect(result.validationResults.every((r) => r.passed)).toBe(true)
     expect(result.responseTimeMs).toBeGreaterThan(0)
   })

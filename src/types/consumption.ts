@@ -11,6 +11,7 @@ export type ValidationStep =
   | 'api_key_validation'
   | 'ttl_check'
   | 'service_authorization'
+  | 'service_block_check'
   | 'merchant_config_check'
   | 'rate_limit_check'
 

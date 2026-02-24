@@ -45,8 +45,8 @@ describe('Merchant Handlers', () => {
 
   it('getDockerImagesByMerchant returns docker images for merchant', () => {
     const images = getDockerImagesByMerchant('user-merchant-2')
-    // merchant-2 has svc-3 (docker) → 2 images
-    expect(images.length).toBe(2)
+    // merchant-2 has svc-3 (docker) → 3 images (img-1, img-2, img-4)
+    expect(images.length).toBe(3)
     expect(images.every((img) => img.serviceId === 'svc-3')).toBe(true)
   })
 

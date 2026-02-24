@@ -26,4 +26,4 @@ export interface SelectOption {
   value: string
 }
 
-export type Status = 'active' | 'pending' | 'suspended' | 'blocked' | 'expired' | 'revoked' | 'rejected' | 'draft'
+export type Status = 'active' | 'pending' | 'suspended' | 'blocked' | 'expired' | 'revoked' | 'rejected' | 'draft' | 'disabled' | 'deprecated'

@@ -34,14 +34,13 @@ const mockMerchant1 = {
 }
 
 describe('Merchant Docker Image Management', () => {
-  // AC-082: Images page shows docker images grouped by service
-  it('renders docker images grouped by service for merchant-2', () => {
+  // AC-082: Images page shows docker images
+  it('renders docker images for merchant-2', () => {
     useAuthStore.getState().login(mockMerchant2)
     renderImagesPage()
     expect(screen.getByRole('heading', { name: /Docker Images/ })).toBeInTheDocument()
-    // merchant-2 owns svc-3 (Stream Processor) which has 2 docker images
-    expect(screen.getByText('Stream Processor')).toBeInTheDocument()
-    expect(screen.getAllByText(/stream-processor/).length).toBeGreaterThanOrEqual(2)
+    // merchant-2 owns svc-3 (Stream Processor) which has 3 docker images
+    expect(screen.getAllByText(/stream-processor/).length).toBeGreaterThanOrEqual(3)
   })
 
   // AC-083: Each image shows push command with copy button

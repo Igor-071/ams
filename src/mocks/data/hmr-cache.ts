@@ -22,6 +22,7 @@ export const CACHE_KEYS = {
   auditLogs: '__ams_auditLogs',
   dockerImages: '__ams_dockerImages',
   projects: '__ams_projects',
+  serviceBlocks: '__ams_serviceBlocks',
 } as const
 
 export function hmrCache<T>(key: string, init: () => T): T {

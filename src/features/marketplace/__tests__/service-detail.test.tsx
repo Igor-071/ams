@@ -194,7 +194,7 @@ describe('Service Detail Page', () => {
     renderServiceDetail('svc-3')
 
     expect(screen.getByText('Images')).toBeInTheDocument()
-    expect(screen.getByText('2 available')).toBeInTheDocument()
+    expect(screen.getByText('3 available')).toBeInTheDocument()
     expect(screen.getByText('Latest Tag')).toBeInTheDocument()
     expect(screen.getByText('latest')).toBeInTheDocument()
     expect(screen.getByText('License')).toBeInTheDocument()

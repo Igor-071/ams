@@ -67,6 +67,13 @@ export interface Service {
   authMethod?: string
 }
 
+export interface ServiceBlock {
+  consumerId: string
+  serviceId: string
+  blockedAt: string
+  blockedBy: string
+}
+
 export interface AccessRequest {
   id: string
   consumerId: string

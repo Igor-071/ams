@@ -20,6 +20,13 @@ const ACTION_OPTIONS = [
   { value: 'merchant.invited', label: 'merchant.invited' },
   { value: 'merchant.registered', label: 'merchant.registered' },
   { value: 'merchant.suspended', label: 'merchant.suspended' },
+  { value: 'merchant.approved', label: 'merchant.approved' },
+  { value: 'merchant.rejected', label: 'merchant.rejected' },
+  { value: 'merchant.disabled', label: 'merchant.disabled' },
+  { value: 'merchant.flagged', label: 'merchant.flagged' },
+  { value: 'merchant.unflagged', label: 'merchant.unflagged' },
+  { value: 'merchant.subscriptions_blocked', label: 'merchant.subscriptions_blocked' },
+  { value: 'merchant.subscriptions_unblocked', label: 'merchant.subscriptions_unblocked' },
   { value: 'service.created', label: 'service.created' },
   { value: 'service.approved', label: 'service.approved' },
   { value: 'service.updated', label: 'service.updated' },
@@ -28,6 +35,10 @@ const ACTION_OPTIONS = [
   { value: 'access.approved', label: 'access.approved' },
   { value: 'apikey.created', label: 'apikey.created' },
   { value: 'apikey.revoked', label: 'apikey.revoked' },
+  { value: 'image.deprecated', label: 'image.deprecated' },
+  { value: 'image.disabled', label: 'image.disabled' },
+  { value: 'consumer.service_blocked', label: 'consumer.service_blocked' },
+  { value: 'consumer.service_unblocked', label: 'consumer.service_unblocked' },
 ] as const
 
 export function AdminGovernancePage() {

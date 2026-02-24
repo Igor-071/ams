@@ -35,6 +35,14 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
     label: 'Draft',
     className: 'bg-slate-500/15 text-slate-400 hover:bg-slate-500/15',
   },
+  disabled: {
+    label: 'Disabled',
+    className: 'bg-red-500/15 text-red-400 hover:bg-red-500/15',
+  },
+  deprecated: {
+    label: 'Deprecated',
+    className: 'bg-amber-500/15 text-amber-400 hover:bg-amber-500/15',
+  },
 }
 
 interface StatusBadgeProps {

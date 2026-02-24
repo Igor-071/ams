@@ -59,7 +59,7 @@ describe('Consumption Endpoint Simulation', () => {
     }, { timeout: 2000 })
     // First step failed, others should be skipped
     const skipped = screen.getAllByText('Skipped')
-    expect(skipped.length).toBe(4)
+    expect(skipped.length).toBe(5)
   })
 
   // AC-106: Invalid API key returns 401
@@ -101,8 +101,8 @@ describe('Consumption Endpoint Simulation', () => {
     await waitFor(() => {
       expect(screen.getByText(/200 — Success/)).toBeInTheDocument()
     }, { timeout: 2000 })
-    // All 5 OK indicators
+    // All 6 OK indicators
     const okIndicators = screen.getAllByText('OK')
-    expect(okIndicators.length).toBe(5)
+    expect(okIndicators.length).toBe(6)
   })
 })

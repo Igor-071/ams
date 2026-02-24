@@ -1,4 +1,4 @@
-import type { Service, AccessRequest } from '@/types/service.ts'
+import type { Service, AccessRequest, ServiceBlock } from '@/types/service.ts'
 import { hmrCache } from './hmr-cache.ts'
 
 export const mockServices: Service[] = hmrCache('__ams_services', () => [
@@ -230,3 +230,5 @@ export const mockAccessRequests: AccessRequest[] = hmrCache('__ams_accessRequest
     resolvedBy: 'user-admin-1',
   },
 ])
+
+export const mockServiceBlocks: ServiceBlock[] = hmrCache('__ams_serviceBlocks', () => [])

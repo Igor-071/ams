@@ -1,6 +1,16 @@
 import type { DockerImage } from '@/types/docker.ts'
 import { hmrCache } from './hmr-cache.ts'
 
+function allPassedSteps() {
+  return [
+    { step: 'naming', label: 'Naming Convention', passed: true },
+    { step: 'tagging', label: 'Tag Validation', passed: true },
+    { step: 'service_assoc', label: 'Service Association', passed: true },
+    { step: 'licensing', label: 'Licensing', passed: true },
+    { step: 'activation', label: 'Activation', passed: true },
+  ]
+}
+
 export const mockDockerImages: DockerImage[] = hmrCache('__ams_dockerImages', () => [
   {
     id: 'img-1',
@@ -13,6 +23,14 @@ export const mockDockerImages: DockerImage[] = hmrCache('__ams_dockerImages', ()
     pullCommand: 'docker pull registry.ams.io/stream-processor:latest',
     pushedAt: '2025-04-01T00:00:00Z',
     pushedBy: 'user-merchant-2',
+    status: 'active',
+    licensingModel: 'online',
+    licenseStatus: 'valid',
+    version: '2.0.0',
+    usageModel: 'pull',
+    pullCount: 1250,
+    executionCount: 890,
+    validationSteps: allPassedSteps(),
   },
   {
     id: 'img-2',
@@ -25,6 +43,15 @@ export const mockDockerImages: DockerImage[] = hmrCache('__ams_dockerImages', ()
     pullCommand: 'docker pull registry.ams.io/stream-processor:v1.2.0',
     pushedAt: '2025-03-25T00:00:00Z',
     pushedBy: 'user-merchant-2',
+    status: 'active',
+    licensingModel: 'offline-ttl',
+    licenseStatus: 'valid',
+    ttlExpiresAt: '2025-06-01T00:00:00Z',
+    version: '1.2.0',
+    usageModel: 'execution',
+    pullCount: 430,
+    executionCount: 1200,
+    validationSteps: allPassedSteps(),
   },
   {
     id: 'img-3',
@@ -37,5 +64,40 @@ export const mockDockerImages: DockerImage[] = hmrCache('__ams_dockerImages', ()
     pullCommand: 'docker pull registry.ams.io/auth-middleware:latest',
     pushedAt: '2025-04-01T00:00:00Z',
     pushedBy: 'user-dual-1',
+    status: 'active',
+    licensingModel: 'online',
+    licenseStatus: 'valid',
+    version: '0.9.0',
+    usageModel: 'pull',
+    pullCount: 320,
+    executionCount: 150,
+    validationSteps: allPassedSteps(),
+  },
+  {
+    id: 'img-4',
+    serviceId: 'svc-3',
+    name: 'stream-processor',
+    tag: 'v1.0.0',
+    digest: 'sha256:d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5',
+    sizeBytes: 280_000_000,
+    license: 'Apache-2.0',
+    pullCommand: 'docker pull registry.ams.io/stream-processor:v1.0.0',
+    pushedAt: '2025-02-15T00:00:00Z',
+    pushedBy: 'user-merchant-2',
+    status: 'deprecated',
+    licensingModel: 'offline-ttl',
+    licenseStatus: 'expired',
+    ttlExpiresAt: '2025-03-15T00:00:00Z',
+    version: '1.0.0',
+    usageModel: 'execution',
+    pullCount: 85,
+    executionCount: 200,
+    validationSteps: [
+      { step: 'naming', label: 'Naming Convention', passed: false, message: 'Image name does not follow org/project-name pattern' },
+      { step: 'tagging', label: 'Tag Validation', passed: true },
+      { step: 'service_assoc', label: 'Service Association', passed: true },
+      { step: 'licensing', label: 'Licensing', passed: true },
+      { step: 'activation', label: 'Activation', passed: true },
+    ],
   },
 ])

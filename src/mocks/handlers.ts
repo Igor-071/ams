@@ -1,13 +1,13 @@
 import type { FilterParams, PaginatedResponse } from '@/types/common.ts'
 import type { User, MerchantProfile, ConsumerProfile } from '@/types/user.ts'
-import type { Service, ServiceMetrics, AccessRequest } from '@/types/service.ts'
+import type { Service, ServiceMetrics, AccessRequest, ServiceBlock } from '@/types/service.ts'
 import type { ApiKey } from '@/types/api-key.ts'
 import type { UsageRecord, DailyUsage } from '@/types/usage.ts'
 import type { Invoice } from '@/types/invoice.ts'
 import type { AuditLog, AuditAction } from '@/types/audit.ts'
 import type { ConsumptionResponse, ValidationResult } from '@/types/consumption.ts'
 import { mockUsers, mockMerchantProfiles, mockConsumerProfiles } from './data/users.ts'
-import { mockServices, mockAccessRequests } from './data/services.ts'
+import { mockServices, mockAccessRequests, mockServiceBlocks } from './data/services.ts'
 import { mockApiKeys } from './data/api-keys.ts'
 import { mockUsageRecords, mockDailyUsage, generateUsageRecordsForDate } from './data/usage.ts'
 import { mockInvoices } from './data/invoices.ts'
@@ -80,7 +80,14 @@ export function getServices(params?: FilterParams): PaginatedResponse<Service> {
 }
 
 export function getActiveServices(params?: FilterParams): PaginatedResponse<Service> {
-  const activeServices = mockServices.filter((s) => s.status === 'active' && s.visibility !== 'private')
+  const excludedMerchantIds = new Set(
+    mockUsers
+      .filter((u) => u.status === 'disabled' || u.status === 'suspended')
+      .map((u) => u.id),
+  )
+  const activeServices = mockServices.filter(
+    (s) => s.status === 'active' && s.visibility !== 'private' && !excludedMerchantIds.has(s.merchantId),
+  )
   let items = [...activeServices]
   items = filterBySearch(items, params?.search, ['name', 'description', 'merchantName'])
   if (params?.type) items = items.filter((s) => s.type === params.type)
@@ -172,7 +179,16 @@ export function createAccessRequest(data: {
   consumerName: string
   serviceId: string
   serviceName: string
-}): AccessRequest {
+}): AccessRequest | null {
+  // Check if merchant has subscriptions blocked
+  const service = mockServices.find((s) => s.id === data.serviceId)
+  if (service) {
+    const merchantProfile = mockMerchantProfiles.find((p) => p.userId === service.merchantId)
+    if (merchantProfile?.subscriptionsBlocked) {
+      return null
+    }
+  }
+
   const request: AccessRequest = {
     id: `ar-${Date.now()}`,
     consumerId: data.consumerId,
@@ -481,7 +497,7 @@ export function createApiKey(data: {
   return key
 }
 
-export function revokeApiKey(keyId: string, by: 'consumer' | 'merchant' = 'consumer'): ApiKey | undefined {
+export function revokeApiKey(keyId: string, by: 'consumer' | 'merchant' | 'admin' = 'consumer'): ApiKey | undefined {
   const key = mockApiKeys.find((k) => k.id === keyId)
   if (!key || key.status !== 'active') return undefined
   key.status = 'revoked'
@@ -761,6 +777,16 @@ export function simulateConsumption(apiKeyValue: string, serviceId: string): Con
   }
   results.push({ step: 'service_authorization', passed: true })
 
+  // Step 3.5: Service Block Check
+  const isBlocked = mockServiceBlocks.some(
+    (b) => b.consumerId === key.consumerId && b.serviceId === serviceId,
+  )
+  if (isBlocked) {
+    results.push({ step: 'service_block_check', passed: false, errorCode: 403, errorMessage: 'Consumer blocked for this service' })
+    return { success: false, statusCode: 403, validationResults: results, errorMessage: 'Consumer blocked for this service' }
+  }
+  results.push({ step: 'service_block_check', passed: true })
+
   // Step 4: Merchant Config Check
   const service = mockServices.find((s) => s.id === serviceId)
   if (!service || !service.endpoint) {
@@ -831,6 +857,187 @@ export function getConsumerServiceUsage(
       ? Math.round(records.reduce((sum, r) => sum + r.responseTimeMs, 0) / totalRequests)
       : 0
   return { totalRequests, avgResponseTimeMs, records }
+}
+
+// Admin — Merchant lifecycle (4-state)
+export function approveMerchantOnboarding(userId: string): User | undefined {
+  const user = mockUsers.find((u) => u.id === userId)
+  if (!user || user.status !== 'pending') return undefined
+  user.status = 'active'
+  persistCache(CACHE_KEYS.users)
+  addAuditLog('merchant.approved', 'user-admin-1', 'Sarah Admin', userId, 'merchant', `Approved merchant onboarding for ${user.name}`)
+  return user
+}
+
+export function rejectMerchantOnboarding(userId: string): User | undefined {
+  const user = mockUsers.find((u) => u.id === userId)
+  if (!user || user.status !== 'pending') return undefined
+  user.status = 'disabled'
+  persistCache(CACHE_KEYS.users)
+  addAuditLog('merchant.rejected', 'user-admin-1', 'Sarah Admin', userId, 'merchant', `Rejected merchant onboarding for ${user.name}`)
+  return user
+}
+
+export function disableMerchant(userId: string): User | undefined {
+  const user = mockUsers.find((u) => u.id === userId)
+  if (!user || (user.status !== 'active' && user.status !== 'suspended')) return undefined
+  user.status = 'disabled'
+  // Suspend all merchant services
+  const merchantServices = mockServices.filter((s) => s.merchantId === userId && s.status === 'active')
+  for (const svc of merchantServices) {
+    svc.status = 'suspended'
+    svc.updatedAt = new Date().toISOString()
+  }
+  if (merchantServices.length > 0) persistCache(CACHE_KEYS.services)
+  persistCache(CACHE_KEYS.users)
+  addAuditLog('merchant.disabled', 'user-admin-1', 'Sarah Admin', userId, 'merchant', `Disabled merchant ${user.name}`)
+  return user
+}
+
+// Admin — Compliance controls
+export function flagMerchantForReview(userId: string, flagged: boolean): MerchantProfile | undefined {
+  const profile = mockMerchantProfiles.find((p) => p.userId === userId)
+  if (!profile) return undefined
+  profile.flaggedForReview = flagged
+  persistCache(CACHE_KEYS.merchantProfiles)
+  const user = mockUsers.find((u) => u.id === userId)
+  const action = flagged ? 'merchant.flagged' : 'merchant.unflagged'
+  const desc = flagged ? `Flagged merchant ${user?.name ?? userId} for review` : `Removed flag from merchant ${user?.name ?? userId}`
+  addAuditLog(action, 'user-admin-1', 'Sarah Admin', userId, 'merchant', desc)
+  return profile
+}
+
+export function blockMerchantSubscriptions(userId: string, blocked: boolean): MerchantProfile | undefined {
+  const profile = mockMerchantProfiles.find((p) => p.userId === userId)
+  if (!profile) return undefined
+  profile.subscriptionsBlocked = blocked
+  persistCache(CACHE_KEYS.merchantProfiles)
+  const user = mockUsers.find((u) => u.id === userId)
+  const action = blocked ? 'merchant.subscriptions_blocked' : 'merchant.subscriptions_unblocked'
+  const desc = blocked ? `Blocked subscriptions for merchant ${user?.name ?? userId}` : `Unblocked subscriptions for merchant ${user?.name ?? userId}`
+  addAuditLog(action, 'user-admin-1', 'Sarah Admin', userId, 'merchant', desc)
+  return profile
+}
+
+// Admin — Credential control
+export function adminRevokeApiKey(keyId: string): ApiKey | undefined {
+  const key = mockApiKeys.find((k) => k.id === keyId)
+  if (!key || key.status !== 'active') return undefined
+  key.status = 'revoked'
+  key.revokedAt = new Date().toISOString()
+  key.revokedBy = 'admin'
+  persistCache(CACHE_KEYS.apiKeys)
+  addAuditLog('apikey.revoked', 'user-admin-1', 'Sarah Admin', keyId, 'apikey', `Admin revoked API key ${key.name}`)
+  return key
+}
+
+export function adminRevokeAllConsumerKeys(consumerId: string): number {
+  const keys = mockApiKeys.filter((k) => k.consumerId === consumerId && k.status === 'active')
+  const now = new Date().toISOString()
+  for (const key of keys) {
+    key.status = 'revoked'
+    key.revokedAt = now
+    key.revokedBy = 'admin'
+  }
+  if (keys.length > 0) {
+    persistCache(CACHE_KEYS.apiKeys)
+    const user = mockUsers.find((u) => u.id === consumerId)
+    addAuditLog('apikey.revoked', 'user-admin-1', 'Sarah Admin', consumerId, 'consumer', `Admin revoked all API keys for ${user?.name ?? consumerId}`)
+  }
+  return keys.length
+}
+
+export function forceRegenerateApiKey(keyId: string): ApiKey | undefined {
+  const oldKey = mockApiKeys.find((k) => k.id === keyId)
+  if (!oldKey) return undefined
+  // Revoke old key
+  oldKey.status = 'revoked'
+  oldKey.revokedAt = new Date().toISOString()
+  oldKey.revokedBy = 'admin'
+  // Create new key with same config
+  const newKey = createApiKey({
+    consumerId: oldKey.consumerId,
+    name: oldKey.name,
+    description: oldKey.description,
+    serviceIds: oldKey.serviceIds,
+    ttlDays: oldKey.ttlDays,
+  })
+  addAuditLog('apikey.revoked', 'user-admin-1', 'Sarah Admin', keyId, 'apikey', `Admin force-regenerated API key ${oldKey.name}`)
+  return newKey
+}
+
+// Docker Image lifecycle
+export function deprecateImage(imageId: string, actorId: string, actorName: string): DockerImage | undefined {
+  const image = mockDockerImages.find((i) => i.id === imageId)
+  if (!image || image.status !== 'active') return undefined
+  image.status = 'deprecated'
+  persistCache(CACHE_KEYS.dockerImages)
+  addAuditLog('image.deprecated', actorId, actorName, imageId, 'image', `Deprecated image ${image.name}:${image.tag}`, 'merchant')
+  return image
+}
+
+export function disableImage(imageId: string, actorId: string, actorName: string): DockerImage | undefined {
+  const image = mockDockerImages.find((i) => i.id === imageId)
+  if (!image || image.status === 'disabled') return undefined
+  image.status = 'disabled'
+  persistCache(CACHE_KEYS.dockerImages)
+  addAuditLog('image.disabled', actorId, actorName, imageId, 'image', `Disabled image ${image.name}:${image.tag}`, 'merchant')
+  return image
+}
+
+// Per-service consumer blocking
+export function blockConsumerForService(
+  consumerId: string,
+  serviceId: string,
+  blockedBy: string,
+  actorName: string,
+): ServiceBlock {
+  const block: ServiceBlock = {
+    consumerId,
+    serviceId,
+    blockedAt: new Date().toISOString(),
+    blockedBy,
+  }
+  mockServiceBlocks.push(block)
+  persistCache(CACHE_KEYS.serviceBlocks)
+  addAuditLog('consumer.service_blocked', blockedBy, actorName, consumerId, 'consumer', `Blocked consumer for service ${serviceId}`, 'merchant')
+  return block
+}
+
+export function unblockConsumerForService(
+  consumerId: string,
+  serviceId: string,
+  actorId: string,
+  actorName: string,
+): boolean {
+  const index = mockServiceBlocks.findIndex(
+    (b) => b.consumerId === consumerId && b.serviceId === serviceId,
+  )
+  if (index === -1) return false
+  mockServiceBlocks.splice(index, 1)
+  persistCache(CACHE_KEYS.serviceBlocks)
+  addAuditLog('consumer.service_unblocked', actorId, actorName, consumerId, 'consumer', `Unblocked consumer for service ${serviceId}`, 'merchant')
+  return true
+}
+
+export function getServiceBlocksForService(serviceId: string): ServiceBlock[] {
+  return mockServiceBlocks.filter((b) => b.serviceId === serviceId)
+}
+
+export function isConsumerBlockedForService(consumerId: string, serviceId: string): boolean {
+  return mockServiceBlocks.some(
+    (b) => b.consumerId === consumerId && b.serviceId === serviceId,
+  )
+}
+
+export function generatePullToken(consumerId: string, imageId: string): { token: string; expiresAt: string } {
+  // Params reserved for future per-consumer/image token scoping
+  void consumerId
+  void imageId
+  const randomPart = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
+  const token = `ams_pull_${randomPart}`
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+  return { token, expiresAt }
 }
 
 // Audit log helper
