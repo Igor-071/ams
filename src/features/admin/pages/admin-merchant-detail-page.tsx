@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router'
+import { AlertTriangleIcon } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Button } from '@/components/ui/button.tsx'
+import { Switch } from '@/components/ui/switch.tsx'
+import { Label } from '@/components/ui/label.tsx'
 import {
   Dialog,
   DialogContent,
@@ -27,17 +30,24 @@ import {
   getServicesByMerchant,
   suspendMerchant,
   unsuspendMerchant,
+  approveMerchantOnboarding,
+  rejectMerchantOnboarding,
+  disableMerchant,
+  flagMerchantForReview,
+  blockMerchantSubscriptions,
 } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
+
+type ConfirmAction = 'suspend' | 'unsuspend' | 'approve' | 'reject' | 'disable' | null
 
 export function AdminMerchantDetailPage() {
   const { merchantId } = useParams<{ merchantId: string }>()
   const navigate = useNavigate()
-  const [confirmAction, setConfirmAction] = useState<'suspend' | 'unsuspend' | null>(null)
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const user = useMemo(() => getUserById(merchantId ?? ''), [merchantId, refreshKey]) // eslint-disable-line react-hooks/exhaustive-deps
-  const profile = useMemo(() => getMerchantProfile(merchantId ?? ''), [merchantId])
+  const profile = useMemo(() => getMerchantProfile(merchantId ?? ''), [merchantId, refreshKey]) // eslint-disable-line react-hooks/exhaustive-deps
   const services = useMemo(
     () => getServicesByMerchant(merchantId ?? '', { pageSize: 100 }).data,
     [merchantId],
@@ -64,9 +74,75 @@ export function AdminMerchantDetailPage() {
       suspendMerchant(user.id)
     } else if (confirmAction === 'unsuspend') {
       unsuspendMerchant(user.id)
+    } else if (confirmAction === 'approve') {
+      approveMerchantOnboarding(user.id)
+    } else if (confirmAction === 'reject') {
+      rejectMerchantOnboarding(user.id)
+    } else if (confirmAction === 'disable') {
+      disableMerchant(user.id)
     }
     setConfirmAction(null)
     setRefreshKey((k) => k + 1)
+  }
+
+  const handleFlagToggle = (checked: boolean) => {
+    flagMerchantForReview(user.id, checked)
+    setRefreshKey((k) => k + 1)
+  }
+
+  const handleSubscriptionsToggle = (checked: boolean) => {
+    blockMerchantSubscriptions(user.id, checked)
+    setRefreshKey((k) => k + 1)
+  }
+
+  const dialogConfig: Record<string, { title: string; description: string; variant: 'destructive' | 'default'; label: string }> = {
+    suspend: { title: 'Suspend Merchant?', description: 'This will prevent the merchant from managing their services.', variant: 'destructive', label: 'Suspend' },
+    unsuspend: { title: 'Unsuspend Merchant?', description: "This will restore the merchant's access to the platform.", variant: 'default', label: 'Unsuspend' },
+    approve: { title: 'Approve Merchant?', description: 'This will activate the merchant account and allow them to create services.', variant: 'default', label: 'Approve' },
+    reject: { title: 'Reject Merchant?', description: 'This will permanently disable the merchant account.', variant: 'destructive', label: 'Reject' },
+    disable: { title: 'Disable Merchant?', description: 'This will permanently disable the merchant. All active services will be suspended. This action cannot be undone.', variant: 'destructive', label: 'Disable' },
+  }
+
+  const renderActions = () => {
+    switch (user.status) {
+      case 'pending':
+        return (
+          <div className="flex gap-2">
+            <Button className="rounded-full" onClick={() => setConfirmAction('approve')}>
+              Approve
+            </Button>
+            <Button variant="destructive" className="rounded-full" onClick={() => setConfirmAction('reject')}>
+              Reject
+            </Button>
+          </div>
+        )
+      case 'active':
+        return (
+          <div className="flex gap-2">
+            <Button variant="destructive" className="rounded-full" onClick={() => setConfirmAction('suspend')}>
+              Suspend Merchant
+            </Button>
+            <Button variant="destructive" className="rounded-full" onClick={() => setConfirmAction('disable')}>
+              Disable Merchant
+            </Button>
+          </div>
+        )
+      case 'suspended':
+        return (
+          <div className="flex gap-2">
+            <Button className="rounded-full" onClick={() => setConfirmAction('unsuspend')}>
+              Unsuspend Merchant
+            </Button>
+            <Button variant="destructive" className="rounded-full" onClick={() => setConfirmAction('disable')}>
+              Disable Merchant
+            </Button>
+          </div>
+        )
+      case 'disabled':
+        return null
+      default:
+        return null
+    }
   }
 
   return (
@@ -78,25 +154,17 @@ export function AdminMerchantDetailPage() {
           { label: 'Merchants', href: ROUTES.ADMIN_MERCHANTS },
           { label: user.name },
         ]}
-        actions={
-          user.status === 'active' ? (
-            <Button
-              variant="destructive"
-              className="rounded-full"
-              onClick={() => setConfirmAction('suspend')}
-            >
-              Suspend Merchant
-            </Button>
-          ) : user.status === 'suspended' ? (
-            <Button
-              className="rounded-full"
-              onClick={() => setConfirmAction('unsuspend')}
-            >
-              Unsuspend Merchant
-            </Button>
-          ) : null
-        }
+        actions={renderActions()}
       />
+
+      {user.status === 'disabled' && (
+        <div className="flex items-center gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+          <AlertTriangleIcon className="h-5 w-5 text-red-400" />
+          <p className="text-sm text-red-400">
+            This merchant account has been permanently disabled. No further actions can be taken.
+          </p>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -132,6 +200,40 @@ export function AdminMerchantDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {user.status !== 'disabled' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-heading text-lg font-light">
+                Compliance Controls
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="flag-review">Flagged for Review</Label>
+                  <p className="text-xs text-muted-foreground">Mark merchant for compliance review</p>
+                </div>
+                <Switch
+                  id="flag-review"
+                  checked={profile?.flaggedForReview ?? false}
+                  onCheckedChange={handleFlagToggle}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="block-subscriptions">Block Subscriptions</Label>
+                  <p className="text-xs text-muted-foreground">Prevent new consumer access requests</p>
+                </div>
+                <Switch
+                  id="block-subscriptions"
+                  checked={profile?.subscriptionsBlocked ?? false}
+                  onCheckedChange={handleSubscriptionsToggle}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Card>
@@ -182,12 +284,10 @@ export function AdminMerchantDetailPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmAction === 'suspend' ? 'Suspend Merchant?' : 'Unsuspend Merchant?'}
+              {confirmAction ? dialogConfig[confirmAction]?.title : ''}
             </DialogTitle>
             <DialogDescription>
-              {confirmAction === 'suspend'
-                ? 'This will prevent the merchant from managing their services.'
-                : 'This will restore the merchant\'s access to the platform.'}
+              {confirmAction ? dialogConfig[confirmAction]?.description : ''}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -195,11 +295,11 @@ export function AdminMerchantDetailPage() {
               Cancel
             </Button>
             <Button
-              variant={confirmAction === 'suspend' ? 'destructive' : 'default'}
+              variant={confirmAction ? dialogConfig[confirmAction]?.variant : 'default'}
               className="rounded-full"
               onClick={handleAction}
             >
-              {confirmAction === 'suspend' ? 'Suspend' : 'Unsuspend'}
+              {confirmAction ? dialogConfig[confirmAction]?.label : ''}
             </Button>
           </DialogFooter>
         </DialogContent>

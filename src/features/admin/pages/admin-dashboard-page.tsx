@@ -92,10 +92,11 @@ export function AdminDashboardPage() {
     const activeServices = allServices.filter((s) => s.status === 'active')
     const pendingServices = allServices.filter((s) => s.status === 'pending_approval')
     const pendingAccessRequests = getAccessRequests({ status: 'pending', pageSize: 1000 }).data
+    const pendingMerchants = merchants.filter((m) => m.status === 'pending')
     return {
       totalMerchants: merchants.length,
       totalConsumers: consumers.length,
-      pendingApprovals: pendingServices.length + pendingAccessRequests.length,
+      pendingApprovals: pendingServices.length + pendingAccessRequests.length + pendingMerchants.length,
       activeServices: activeServices.length,
       pendingServices,
       pendingAccessRequests,

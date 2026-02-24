@@ -25,16 +25,22 @@ import {
   getConsumerProfile,
   getAccessRequestsByConsumer,
   getUsageRecords,
+  getApiKeysByConsumer,
   blockConsumer,
   unblockConsumer,
   approveAccessRequest,
   denyAccessRequest,
+  adminRevokeApiKey,
+  adminRevokeAllConsumerKeys,
+  forceRegenerateApiKey,
 } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
 
+type ConfirmAction = 'block' | 'unblock' | 'revoke-all' | null
+
 export function AdminConsumerDetailPage() {
   const { consumerId } = useParams<{ consumerId: string }>()
-  const [confirmAction, setConfirmAction] = useState<'block' | 'unblock' | null>(null)
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const user = useMemo(() => getUserById(consumerId ?? ''), [consumerId, refreshKey]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -46,6 +52,10 @@ export function AdminConsumerDetailPage() {
   const usage = useMemo(
     () => getUsageRecords({ consumerId: consumerId ?? '', pageSize: 1000 }),
     [consumerId],
+  )
+  const apiKeys = useMemo(
+    () => getApiKeysByConsumer(consumerId ?? '', { pageSize: 100 }).data,
+    [consumerId, refreshKey], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   if (!user) {
@@ -69,6 +79,8 @@ export function AdminConsumerDetailPage() {
       blockConsumer(user.id)
     } else if (confirmAction === 'unblock') {
       unblockConsumer(user.id)
+    } else if (confirmAction === 'revoke-all') {
+      adminRevokeAllConsumerKeys(user.id)
     }
     setConfirmAction(null)
     setRefreshKey((k) => k + 1)
@@ -83,6 +95,24 @@ export function AdminConsumerDetailPage() {
     denyAccessRequest(requestId)
     setRefreshKey((k) => k + 1)
   }
+
+  const handleRevokeKey = (keyId: string) => {
+    adminRevokeApiKey(keyId)
+    setRefreshKey((k) => k + 1)
+  }
+
+  const handleForceRegenerate = (keyId: string) => {
+    forceRegenerateApiKey(keyId)
+    setRefreshKey((k) => k + 1)
+  }
+
+  const dialogConfig: Record<string, { title: string; description: string; variant: 'destructive' | 'default'; label: string }> = {
+    block: { title: 'Block Consumer?', description: 'This will revoke all active API keys and prevent the consumer from accessing services.', variant: 'destructive', label: 'Block' },
+    unblock: { title: 'Unblock Consumer?', description: "This will restore the consumer's access to the platform.", variant: 'default', label: 'Unblock' },
+    'revoke-all': { title: 'Revoke All API Keys?', description: 'This will immediately revoke all active API keys for this consumer. This action cannot be undone.', variant: 'destructive', label: 'Revoke All' },
+  }
+
+  const activeKeyCount = apiKeys.filter((k) => k.status === 'active').length
 
   return (
     <div className="space-y-6">
@@ -140,6 +170,77 @@ export function AdminConsumerDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="font-heading text-lg font-light">
+            API Keys
+          </CardTitle>
+          {activeKeyCount > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="rounded-full"
+              onClick={() => setConfirmAction('revoke-all')}
+            >
+              Revoke All Keys
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {apiKeys.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No API keys</p>
+          ) : (
+            <div className="rounded-2xl border border-white/[0.12]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {apiKeys.map((key) => (
+                    <TableRow key={key.id}>
+                      <TableCell className="font-medium">{key.name}</TableCell>
+                      <TableCell>
+                        <StatusBadge status={key.status} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(key.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {key.status === 'active' && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="rounded-full"
+                              onClick={() => handleRevokeKey(key.id)}
+                            >
+                              Revoke
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-full"
+                              onClick={() => handleForceRegenerate(key.id)}
+                            >
+                              Force Regenerate
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -205,12 +306,10 @@ export function AdminConsumerDetailPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmAction === 'block' ? 'Block Consumer?' : 'Unblock Consumer?'}
+              {confirmAction ? dialogConfig[confirmAction]?.title : ''}
             </DialogTitle>
             <DialogDescription>
-              {confirmAction === 'block'
-                ? 'This will revoke all active API keys and prevent the consumer from accessing services.'
-                : 'This will restore the consumer\'s access to the platform.'}
+              {confirmAction ? dialogConfig[confirmAction]?.description : ''}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -218,11 +317,11 @@ export function AdminConsumerDetailPage() {
               Cancel
             </Button>
             <Button
-              variant={confirmAction === 'block' ? 'destructive' : 'default'}
+              variant={confirmAction ? dialogConfig[confirmAction]?.variant : 'default'}
               className="rounded-full"
               onClick={handleBlockAction}
             >
-              {confirmAction === 'block' ? 'Block' : 'Unblock'}
+              {confirmAction ? dialogConfig[confirmAction]?.label : ''}
             </Button>
           </DialogFooter>
         </DialogContent>

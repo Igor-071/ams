@@ -13,6 +13,6 @@ export interface ApiKey {
   expiresAt: string
   createdAt: string
   revokedAt?: string
-  revokedBy?: 'consumer' | 'merchant'
+  revokedBy?: 'consumer' | 'merchant' | 'admin'
   metadata?: Record<string, string>
 }

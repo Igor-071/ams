@@ -2,15 +2,17 @@
 
 ## Context
 
-This plan extends the original `development-plan.md` (Phases 0-6, all complete) with new work items identified from the expanded TRD v1 (`ams-trd-v1.md`). TRD v1 filled in all previously empty Design and Acceptance Criteria sections, added 3 Non-Functional Requirements, and detailed architectural layers.
+This plan extends the original `development-plan.md` (Phases 0-6) with work items identified from the expanded TRD v1 (`ams-trd-v1.md`). TRD v1 filled in all previously empty Design and Acceptance Criteria sections, added 3 Non-Functional Requirements, and detailed system architecture layers.
 
-**Baseline:** Phases 0-6 complete. 115 ACs, 245 tests, 41 test files. All quality gates green.
+Since Phases 0-6 completed, significant post-phase enhancements were shipped. This plan accounts for the **actual current state** of the prototype.
 
 **Scope:** Frontend prototype only. Backend-only requirements are documented at the end as out-of-scope.
 
 ---
 
-## Completed Phases (Reference)
+## Current State (Baseline)
+
+### Completed Phases
 
 | Phase | Name | ACs | Tests |
 |-------|------|-----|-------|
@@ -22,284 +24,373 @@ This plan extends the original `development-plan.md` (Phases 0-6, all complete) 
 | 5 | Admin Dashboard | 17 | 220 |
 | 6 | Consumption Endpoint Simulation | 13 | 245 |
 
+### Post-Phase Enhancements (already shipped)
+
+| Feature | Tests Added | Running Total |
+|---------|-------------|---------------|
+| sessionStorage persistence (hmrCache) | — | 251 |
+| Merchant Usage Page (chart + date range + detail + sort) | 13 | 276 |
+| Consumer Usage Page (mirrors merchant usage) | 7 | 283 |
+| Admin Usage Page (platform-wide analytics) | 12 | 295 |
+| Admin Dashboard Charts (4 charts) | 4 | 299 |
+| Merchant Dashboard Charts (4 charts) | 4 | 303 |
+| Consumer Dashboard Charts (4 charts) | 4 | 307 |
+| Inline Service Editing | 7 | 314 |
+| Enriched Marketplace (metrics, features, quickStart) | 12 | 326 |
+
+**Current totals:** 37 pages, 27 components, 57 handlers, 38 routes, 46 test files, 326 tests.
+
+### What TRD v1 Requirements Are Already Covered
+
+| TRD v1 Requirement | FR | How It's Covered |
+|--------------------|-----|-----------------|
+| Merchant usage dashboard with trends/spikes | FR2-MERCH-05 | `merchant-usage-page.tsx` with ConsumptionChart, date range picker, detail drill-down |
+| Consumer usage per service / per API key / combined | FR3-CONS-03 | `usage-page.tsx` with By API Key & By Service tables, chart, detail page |
+| Admin platform-wide usage oversight | FR4-ADMIN-01/02 | `admin-usage-page.tsx` with stat cards, chart, 3 breakdown tables |
+| Historical data & trends for all roles | FR3-CONS-03 | Date range pickers + area charts on all usage pages |
+| Service metadata (name, description, URL, version, pricing, auth, format) | FR2-MERCH-01 | Enriched `Service` type + marketplace detail page redesign |
+| Service metrics (requests, consumers, uptime, success rate) | FR2-MERCH-01 | `getServiceMetrics` handler + metrics bar on detail page |
+| Merchant can edit service configuration | FR2-MERCH-01 | Inline Edit/Save/Cancel on `merchant-service-detail-page.tsx` |
+| Consumption endpoint simulation with validation chain | FR2-MERCH-03 | `consumption-simulator.tsx` + `usage-pipeline-viz.tsx` |
+| Auth: Email OTP + Google SSO (mock) | FR1 | Login page with both flows |
+| Auth: Role switching for dual accounts | FR1 | User menu role switcher |
+| Public marketplace browsable without login | FR3-CONS-02 | `catalog-page.tsx` with search, filters, type badges |
+| API key management (generate, configure, revoke, TTL) | FR3-CONS-01 | Full CRUD pages + detail page |
+| Admin: merchant invite, suspend/unsuspend | FR4-ADMIN-01 | `admin-merchant-detail-page.tsx` |
+| Admin: consumer block/unblock | FR4-ADMIN-02 | `admin-consumer-detail-page.tsx` |
+| Admin: service approve/reject | FR4-ADMIN-01 | `admin-service-detail-page.tsx` |
+| Admin: audit logs | FR4-ADMIN-01 | `admin-governance-page.tsx` |
+
 ---
 
-## Phase 7: Merchant & Admin Lifecycle Enhancements
+## Gap Analysis: TRD v1 vs. Current State
 
-**Goal:** Align merchant and consumer lifecycle states with TRD v1 specifications. Add missing admin governance capabilities.
+### Gaps Addressable in Prototype
+
+| # | Gap | TRD v1 FR | Priority | Current State |
+|---|-----|-----------|----------|---------------|
+| 1 | Consumer can't see their access request statuses | FR3-CONS-02 | High | `AccessRequest` type exists with status field, but no consumer-facing view |
+| 2 | Merchant lifecycle: only 3 states (active/suspended/blocked), TRD v1 requires 4 (pending/active/suspended/disabled) | FR4-ADMIN-01 | High | No "pending" onboarding approval or "disabled" hard stop |
+| 3 | Docker images have no status, licensing model, or lifecycle management | FR2-MERCH-02, FR2-MERCH-05 | High | `DockerImage` type has only basic fields (name, tag, digest, size, license string) |
+| 4 | No per-service consumer blocking by merchant | FR2-MERCH-05 | Medium | Merchants can revoke API keys but not block per-service |
+| 5 | No data export (CSV/PDF) on any page | FR2-MERCH-04 | Medium | Usage pages, invoices, audit logs — all display-only |
+| 6 | Projects & Teams: only 2 roles (owner/member), no invite/remove, no team-level resources | FR3-CONS-04 | Medium | Basic card grid + create dialog, no RBAC enforcement |
+| 7 | Admin can't revoke consumer keys or force regeneration | FR4-ADMIN-02 | Medium | Admin can only block/unblock consumers platform-wide |
+| 8 | No admin compliance controls (flag for review, block subscriptions) | FR4-ADMIN-01 | Medium | No flagging or subscription-blocking UI |
+| 9 | Consumer image pull flow — no token generation simulation | FR3-CONS-05 | Medium | Static pull command displayed, no pull access flow |
+| 10 | No image validation pipeline visualization on merchant side | FR2-MERCH-02 | Low | Images are listed but no push validation pipeline shown |
+| 11 | Admin can't view consumer's teams/projects | FR4-ADMIN-02 | Low | `admin-consumer-detail-page` shows usage but not teams |
+
+### Gaps NOT Feasible for Prototype (Backend-Only)
+
+Documented in [Out of Scope](#out-of-scope--backend-only-requirements) section below.
+
+---
+
+## Phase 7: Lifecycle, Access Requests & Admin Controls
+
+**Goal:** Align merchant/consumer lifecycle with TRD v1, give consumers visibility into their access requests, and strengthen admin governance tools.
 
 **Depends on:** Phases 0-6
 
-**Build:**
-
 ### 7.1 Merchant Lifecycle States (FR4-ADMIN-01)
 
-TRD v1 specifies 4 merchant states: **Pending, Active, Suspended, Disabled**. Currently only Active/Suspended exist.
+TRD v1 specifies 4 states: **Pending → Active → Suspended → Disabled**.
+Current `UserStatus`: `'active' | 'suspended' | 'blocked'`.
 
-- Add `pending` and `disabled` to `UserStatus` type
-- Update `admin-merchant-detail-page.tsx`:
-  - Pending state → show "Approve" / "Reject" buttons
-  - Active state → show "Suspend" / "Disable" buttons
-  - Suspended state → show "Unsuspend" / "Disable" buttons
-  - Disabled state → read-only, no actions (hard stop)
-- Update `admin-merchants-page.tsx` — filter by all 4 states
-- Update mock data — add a merchant in "pending" state
-- Add mock handlers: `approveMerchantOnboarding`, `disableMerchant`
-- Suspended/disabled merchant services hidden from marketplace catalog
-- Status badge colors: pending=yellow, active=green, suspended=orange, disabled=red
+- Add `'pending'` and `'disabled'` to `UserStatus` type (replace `'blocked'` with `'disabled'` for merchants — `'blocked'` remains for consumers)
+- Add mock merchant user in `'pending'` state (e.g., merchant who registered but not yet approved)
+- Add mock handlers: `approveMerchantOnboarding(userId)`, `rejectMerchantOnboarding(userId)`, `disableMerchant(userId)`
+- Update `admin-merchant-detail-page.tsx` action buttons:
+  - **Pending** → "Approve" (→ active) + "Reject" (→ disabled with reason)
+  - **Active** → "Suspend" + "Disable"
+  - **Suspended** → "Unsuspend" + "Disable"
+  - **Disabled** → read-only, no actions (hard stop — show info banner)
+- Update `admin-merchants-page.tsx` — add status filter for all 4 states
+- Suspended/disabled merchants' services hidden from marketplace `getActiveServices()` filter
+- Status badges: pending=yellow, active=green, suspended=orange, disabled=red
+- Add audit actions: `'merchant.approved'`, `'merchant.rejected'`, `'merchant.disabled'`
+- Update `admin-dashboard-page.tsx` KPI cards to show pending merchant count
 
-### 7.2 Admin Compliance & Risk Controls (FR4-ADMIN-01)
+### 7.2 Consumer Access Request Status View (FR3-CONS-02)
 
-TRD v1 specifies: flag merchant for review, block new subscriptions, monitor usage anomalies.
+TRD v1 specifies: consumer dashboard shows access request statuses.
 
-- Add "Flag for Review" action on merchant detail page (sets a `flagged: boolean` on merchant)
-- Flagged merchants show a warning badge in merchant list
-- Add "Block New Subscriptions" toggle on merchant detail — prevents new consumer access requests for that merchant's services
-- Add flagged/subscription-blocked filters to admin merchants page
+- Add "My Requests" card to `dashboard-page.tsx` showing 3 most recent access requests with status badges (pending/approved/denied)
+- Add `/dashboard/requests` page — full list table with columns: Service Name, Status, Requested Date, Resolved Date, Resolved By
+- Add mock handler: `getAccessRequestsByConsumer(consumerId)` (already exists per inventory)
+- Add route to `router.tsx` and sidebar nav item "Requests" with inbox icon
+- Clicking an approved request links to the service detail; clicking pending shows "Awaiting approval" state
 
-### 7.3 Admin Credential Control (FR4-ADMIN-02)
+### 7.3 Admin Compliance & Risk Controls (FR4-ADMIN-01)
 
-TRD v1 specifies: admin can revoke API keys, force key regeneration, invalidate image license tokens.
+- Add `flaggedForReview: boolean` field to `MerchantProfile`
+- Add `subscriptionsBlocked: boolean` field to `MerchantProfile`
+- Add "Flag for Review" toggle on `admin-merchant-detail-page.tsx` — sets flagged state
+- Add "Block New Subscriptions" toggle — prevents `createAccessRequest()` from succeeding for that merchant's services
+- Flagged merchants show warning icon/badge in `admin-merchants-page.tsx` list
+- Add filter toggles on merchants list: "Show flagged only", "Show subscription-blocked only"
+- Add audit actions: `'merchant.flagged'`, `'merchant.unflagged'`, `'merchant.subscriptions_blocked'`, `'merchant.subscriptions_unblocked'`
 
-- Add "Revoke All Keys" action on `admin-consumer-detail-page.tsx`
-- Add "Force Regenerate Key" action per individual key in admin consumer detail
-- Add confirmation dialogs for all destructive actions
-- Log all actions to audit trail
+### 7.4 Admin Credential Control (FR4-ADMIN-02)
 
-### 7.4 Consumer Access Request Status (FR3-CONS-02)
-
-TRD v1 specifies: dashboard shows access status (pending, approved, denied).
-
-- Add "My Requests" section to consumer dashboard page showing recent access requests with status badges
-- Add `/dashboard/requests` page — full list of consumer's access requests with status, service name, requested date, resolved date
-- Add route and sidebar nav item
-- Wire to existing `AccessRequest` type and mock data
+- Add "API Keys" section to `admin-consumer-detail-page.tsx` showing consumer's keys
+- Add "Revoke Key" action per individual key
+- Add "Revoke All Keys" bulk action with confirmation dialog
+- Add "Force Regenerate" action per key (revoke + create new with same config)
+- Add mock handlers: `adminRevokeApiKey(keyId)`, `adminRevokeAllConsumerKeys(consumerId)`
+- All actions logged to audit trail with `actorRole: 'admin'`
 
 **Spec:** `docs/specs/lifecycle-governance-enhancements.md`
 
 **AC themes:**
-- Merchant lifecycle transitions work correctly through all 4 states
+- Merchant transitions through all 4 lifecycle states correctly
+- Pending merchants appear in admin dashboard pending count
 - Disabled merchant's services disappear from marketplace
+- Consumer sees their access requests with correct status badges
 - Flagged merchants show warning in admin list
-- Block-new-subscriptions prevents access request creation
-- Admin can revoke all consumer keys in one action
-- Consumer sees pending/approved/denied status for their requests
+- Block-new-subscriptions prevents access request creation (shows error toast)
+- Admin can view, revoke, and force-regenerate consumer API keys
 - All admin actions logged to audit trail
 
 ---
 
-## Phase 8: Projects & Teams Enhancement
+## Phase 8: Docker Image Lifecycle & Licensing
 
-**Goal:** Upgrade Projects & Teams from basic stub to match TRD v1 RBAC specification with team-level resource management.
-
-**Depends on:** Phase 7
-
-**Build:**
-
-### 8.1 Project RBAC (FR3-CONS-04)
-
-TRD v1 defines 3 roles: **Owner** (full control), **Admin** (manage keys/services), **Member** (view/use only).
-
-- Add `admin` to `ProjectMember.role` type: `'owner' | 'admin' | 'member'`
-- Update `project-detail-page.tsx`:
-  - Owner: manage members, manage keys, manage services, delete project
-  - Admin: generate/revoke API keys, assign services
-  - Member: view assigned services, view usage, copy existing keys
-- Show role badge next to each member
-- Add "Change Role" dropdown for owners managing members
-- Add mock data with members in all 3 roles
-
-### 8.2 Team-Level API Keys (FR3-CONS-04)
-
-TRD v1 specifies: API keys can be created and managed at the Team/Project level.
-
-- Add `projectId?: string` field to `ApiKey` type
-- Update API key creation form — optional "Assign to Project" dropdown
-- Project detail page shows keys belonging to that project
-- Project-level keys inherit project's service assignments
-- Members can view project keys; only Owner/Admin can create/revoke
-
-### 8.3 Team Membership Management (FR3-CONS-04)
-
-TRD v1 specifies: invite members via email, remove members, assign roles.
-
-- Add "Invite Member" dialog on project detail page (email input + role selector)
-- Add "Remove Member" action with confirmation
-- Invitation flow (mock): existing user → direct add, new user → show "invite sent" toast
-- All membership changes logged (mock audit)
-
-### 8.4 Usage Filtered by Project (FR3-CONS-03)
-
-TRD v1 specifies: usage data can be filtered by team/project.
-
-- Add "Project" filter dropdown to consumer usage page
-- Filter usage data by project's associated API keys
-- Show project-level usage aggregation on project detail page
-
-**Spec:** `docs/specs/projects-teams-rbac.md`
-
-**AC themes:**
-- Three roles enforced: Owner sees all controls, Admin manages keys, Member views only
-- API keys can be assigned to a project
-- Project detail shows project-scoped keys and usage
-- Owner can invite, remove, and change member roles
-- Usage page filterable by project
-- All membership changes auditable
-
----
-
-## Phase 9: Image & Licensing Enhancements
-
-**Goal:** Upgrade Docker image management from stub to match TRD v1 licensing and pull flow specifications.
+**Goal:** Upgrade Docker images from basic metadata display to full lifecycle management with licensing models, pull flow simulation, and validation pipeline.
 
 **Depends on:** Phase 7
 
-**Build:**
+### 8.1 Docker Image Type Enhancement (FR2-MERCH-02)
 
-### 9.1 Docker Image Type Enhancement (FR2-MERCH-02, FR2-MERCH-05)
+Extend `DockerImage` type with fields specified in TRD v1:
 
-TRD v1 specifies: license validity, provisioning status, TTL, usage model, versioning lifecycle.
+```
+status: 'active' | 'deprecated' | 'disabled'
+licensingModel: 'online' | 'offline-ttl'
+licenseStatus: 'valid' | 'expired' | 'revoked'
+ttlExpiresAt?: string
+version: string  (semver, separate from tag)
+usageModel: 'execution' | 'pull' | 'time-based'
+pullCount: number
+executionCount: number
+```
 
-- Add fields to `DockerImage` type:
-  - `status: 'active' | 'deprecated' | 'disabled'`
-  - `licensingModel: 'online' | 'offline-ttl'`
-  - `licenseStatus: 'valid' | 'expired' | 'revoked'`
-  - `ttlExpiresAt?: string`
-  - `version: string` (semantic versioning)
-  - `usageModel: 'execution' | 'pull' | 'time-based'`
-- Update mock data with varied licensing configurations
+- Update `docker-images.ts` mock data with varied configurations:
+  - Online image with valid license
+  - Offline-TTL image with expired TTL
+  - Deprecated image version
+  - Active image with high pull count
+- Update `DockerRegistry` type with `scopedToken` and `tokenExpiresAt` fields
 
-### 9.2 Merchant Image Licensing Dashboard (FR2-MERCH-05)
+### 8.2 Merchant Image Management (FR2-MERCH-02, FR2-MERCH-05)
 
-TRD v1 specifies: merchants can view provisioning status, license validity, and restrictions.
+Upgrade `merchant-images-page.tsx` to full management dashboard:
 
-- Update `merchant-images-page.tsx`:
-  - Show license status badge per image (valid/expired/revoked)
-  - Show licensing model (online/offline-ttl)
-  - Show TTL expiry date for TTL-based images
-  - Add "Deprecate Version" action
-  - Add "Disable Version" action
-- Add usage metrics per image (pull count, execution count)
-- Add consumer access list per image
+- Status badge per image (active=green, deprecated=yellow, disabled=red)
+- License status badge (valid=green, expired=orange, revoked=red)
+- Licensing model indicator (online / offline-ttl)
+- TTL expiry date shown for TTL-based images
+- Usage metrics per image: pull count, execution count
+- Actions: "Deprecate Version" (→ deprecated), "Disable Version" (→ disabled)
+- Add mock handlers: `deprecateImage(imageId)`, `disableImage(imageId)`
+- Add search/filter by status, licensing model
+- Add audit actions: `'image.deprecated'`, `'image.disabled'`
 
-### 9.3 Consumer Image Pull Flow (FR3-CONS-05)
+### 8.3 Merchant Image Validation Pipeline (FR2-MERCH-02)
 
-TRD v1 specifies: request pull → validate entitlement → generate short-lived token → pull.
+TRD v1 specifies a validation pipeline when images are pushed.
 
-- Update `images-page.tsx` (consumer):
-  - Add "Request Pull Access" button per image
-  - Show simulated pull flow: Validate entitlement → Check license → Generate token → Show pull command
-  - Generated token shown once (with copy button), time-bounded display
-  - Show license type indicator (online vs. offline-ttl)
-- Add search/filter for consumer images page (by name, service, license type)
+- Add `ImageValidationPipeline` component showing 5 steps:
+  1. Verify naming conventions
+  2. Validate tagging (semver format)
+  3. Check service association
+  4. Validate licensing configuration
+  5. Mark as Active
+- Show pipeline status per image: each step has pass/fail indicator
+- Display on merchant image detail view (click image row to expand)
+- For mock: all existing images show "all steps passed"; simulate a failed step for one image
 
-### 9.4 Image Validation Pipeline Visualization (FR2-MERCH-02)
+### 8.4 Consumer Image Pull Flow (FR3-CONS-05)
 
-TRD v1 specifies: validation pipeline on image push (signature, naming, tagging, service association, licensing config).
+Upgrade `images-page.tsx` (consumer) with pull access simulation:
 
-- Add validation pipeline component to `merchant-images-page.tsx`
-- Visual step indicators: Verify signature → Validate naming → Check association → Validate license config → Mark Active
-- Show pipeline status per image version (simulated)
+- Add "Request Pull Access" button per image
+- Simulated pull flow dialog with steps:
+  1. Validate consumer entitlement → pass/fail
+  2. Check license status → pass/fail
+  3. Check team/project association → pass/fail
+  4. Generate short-lived pull token → show token (masked, copy button)
+- Token displayed once with expiry countdown (mock: 30 min)
+- Show licensing model badge (online / offline-ttl)
+- Add search/filter by name, service, license type, status
+- Update pull command to include generated token
 
-### 9.5 Per-Service Consumer Blocking (FR2-MERCH-05)
+### 8.5 Per-Service Consumer Blocking (FR2-MERCH-05)
 
-TRD v1 specifies: merchants can block/restrict specific consumers on a per-service basis.
-
-- Add "Block Consumer" action on `merchant-service-consumers-page.tsx`
-- Block is per-service (not platform-wide like admin block)
-- Blocked consumers shown with blocked badge
-- Add "Unblock" action
+- Add "Block" / "Unblock" actions per consumer row on `merchant-service-consumers-page.tsx`
+- Per-service block (not platform-wide): consumer can still access other services
+- Blocked consumers show red "Blocked" badge in list
+- Add mock handler: `blockConsumerForService(consumerId, serviceId)`, `unblockConsumerForService(consumerId, serviceId)`
+- Blocked consumer's API key calls to that service fail in consumption simulator (403)
+- Add audit action: `'consumer.service_blocked'`, `'consumer.service_unblocked'`
 
 **Spec:** `docs/specs/image-licensing-enhancements.md`
 
 **AC themes:**
-- Docker images show license status, TTL, and usage model
-- Merchants can deprecate/disable image versions
-- Consumer pull flow simulates token generation
-- Validation pipeline visualizes all 5 steps
+- Docker images display status, licensing model, license status, and TTL
+- Merchants can deprecate and disable image versions
+- Validation pipeline shows 5 steps with pass/fail per image
+- Consumer pull flow simulates entitlement check and token generation
+- Pull token shown once with copy button and expiry indicator
+- Consumer image page has search and filter
 - Per-service consumer blocking works independently of platform-wide block
-- Image search/filter works on consumer page
+- Blocked consumer gets 403 in consumption simulator for that service
 
 ---
 
-## Phase 10: Data Export & Reporting
+## Phase 9: Projects & Teams Enhancement
 
-**Goal:** Add export capabilities for usage reports and invoices as specified in TRD v1.
+**Goal:** Upgrade Projects & Teams from basic stub to TRD v1 spec with RBAC, team-level resources, and membership management.
 
-**Depends on:** Phases 7-8
+**Depends on:** Phase 7
 
-**Build:**
+### 9.1 Project RBAC (FR3-CONS-04)
 
-### 10.1 Merchant Report Export (FR2-MERCH-04)
+TRD v1 defines 3 roles: **Owner**, **Admin**, **Member**.
 
-TRD v1 specifies: reports exportable in CSV and PDF, sharable with consumers, custom date ranges.
+- Add `'admin'` to `ProjectMember.role`: `'owner' | 'admin' | 'member'`
+- Update `project-detail-page.tsx` with role-based UI:
+  - **Owner:** manage members (invite, remove, change role), manage keys, manage services, delete project
+  - **Admin:** generate/revoke API keys, assign/remove services
+  - **Member:** view services, view usage, copy existing keys (read-only)
+- Show role badge (color-coded) next to each member name
+- Add "Change Role" dropdown for owners managing members (Owner can promote Member → Admin or demote Admin → Member)
+- Update mock data with at least one project having members in all 3 roles
 
-- Add "Export CSV" button on `merchant-invoices-page.tsx`
-- Add "Export CSV" button on `merchant-service-consumers-page.tsx` (usage by API key)
-- CSV export generates a Blob and triggers browser download
-- Add date range picker for custom reporting periods on invoices page
-- Add "Export PDF" button (generates a simple formatted text file as PDF simulation — full PDF generation is backend work, but we can simulate the trigger and show a toast)
-- Add "Share Report" action (mock: shows toast "Report shared with consumer")
+### 9.2 Team Membership Management (FR3-CONS-04)
 
-### 10.2 Consumer Usage Export (FR3-CONS-03)
+- Add "Invite Member" dialog on project detail page:
+  - Email input field
+  - Role selector (Admin or Member — Owner cannot be assigned)
+  - Submit: if mock user exists → add directly with toast; if not → show "Invitation sent" toast
+- Add "Remove Member" action per member row (Owner-only, with confirmation dialog)
+- Owner cannot remove themselves (show disabled state or hide button)
+- Add mock handlers: `addProjectMember(projectId, email, role)`, `removeProjectMember(projectId, userId)`, `changeProjectMemberRole(projectId, userId, newRole)`
+- All membership changes generate audit log entries
 
-TRD v1 specifies: consumers can access historical usage data for reporting and budget tracking.
+### 9.3 Team-Level API Keys (FR3-CONS-04)
 
-- Add "Export CSV" button on consumer usage page
-- Export includes: service name, API key, date, request count, cost
-- Add date range filter for historical data (already partially exists)
+- Add optional `projectId?: string` field to `ApiKey` type
+- Update `api-key-new-page.tsx` — add "Assign to Project" dropdown (optional)
+- Project detail page shows "Project API Keys" section with keys where `projectId` matches
+- Keys created within project context auto-assign the project's services
+- RBAC: Owner/Admin can create/revoke project keys; Member can only view/copy
+- Update mock data: assign some existing keys to projects
 
-### 10.3 Admin Report Export
+### 9.4 Usage Filtered by Project (FR3-CONS-03)
 
-- Add "Export CSV" button on `admin-governance-page.tsx` for audit logs
-- Add "Export CSV" on admin consumer detail (usage data)
+- Add "Project" filter dropdown to consumer `usage-page.tsx`
+- Filter usage data by the API keys associated with selected project
+- Add "Usage" summary section on project detail page: total requests, total cost, chart (small)
+- Reuse `ConsumptionChart` component with filtered data
 
-**Spec:** `docs/specs/data-export-reporting.md`
+### 9.5 Admin: View Consumer Teams (FR4-ADMIN-02)
+
+- Add "Teams & Projects" section to `admin-consumer-detail-page.tsx`
+- Show list of consumer's projects with member count and service count
+- Read-only view (admin cannot modify teams, only view)
+
+**Spec:** `docs/specs/projects-teams-rbac.md`
 
 **AC themes:**
-- CSV export downloads a valid CSV file with correct headers and data
-- Date range picker filters data before export
-- Export works on invoices, usage, and audit log pages
-- PDF export shows simulation toast
-- Share report shows confirmation toast
+- Three roles enforced: Owner sees all controls, Admin manages keys/services, Member is read-only
+- Owner can invite members, remove members, and change roles
+- API keys can be created at project level
+- Project detail shows scoped keys and usage summary
+- Consumer usage page filterable by project
+- Admin can view consumer's projects on detail page
+- All membership changes appear in audit log
 
 ---
 
-## Phase 11: Audit Trail & Observability Enhancements
+## Phase 10: Data Export & Audit Completeness
 
-**Goal:** Extend audit logging to cover all auditable actions specified in TRD v1.
+**Goal:** Add CSV export to data-heavy pages and ensure comprehensive audit logging as specified in TRD v1.
 
-**Depends on:** Phases 7-10
+**Depends on:** Phases 7-9
 
-**Build:**
+### 10.1 CSV Export Utility
 
-### 11.1 Comprehensive Audit Logging (FR3-CONS-01, FR4-ADMIN-01, FR4-ADMIN-02)
+- Create shared `lib/export-csv.ts` utility:
+  - Takes array of objects + column config → generates CSV string
+  - Creates Blob, triggers browser download with filename
+  - Reusable across all pages
 
-TRD v1 specifies: all key management, membership changes, and admin actions are auditable.
+### 10.2 Merchant Report Export (FR2-MERCH-04)
 
-- Log consumer API key actions to audit trail: create, disable, revoke, regenerate
-- Log project membership changes: invite, remove, role change
-- Log merchant image actions: deprecate, disable, push
-- Log consumer access requests: request, approve, deny
-- All audit entries include: user, action, target, timestamp, metadata
-- Update `admin-governance-page.tsx` — add filters for new action types
+- Add "Export CSV" button on `merchant-invoices-page.tsx` — exports invoice list
+- Add "Export CSV" button on `merchant-usage-page.tsx` — exports daily usage data
+- Add "Export CSV" button on `merchant-service-consumers-page.tsx` — exports usage by API key
+- Add "Export CSV" button on `merchant-usage-detail-page.tsx` — exports request log
+- Add "Share Report" action on invoices (mock: toast "Report link copied" / "Sent to consumer")
+- PDF export: show "Export PDF" button that triggers toast "PDF generation requires server — feature planned" (honest prototype limitation)
 
-### 11.2 Notification Enhancements
+### 10.3 Consumer Usage Export (FR3-CONS-03)
 
-TRD v1 specifies: notifications on approval events and threshold alerts.
+- Add "Export CSV" button on consumer `usage-page.tsx` — exports usage data
+- Add "Export CSV" button on consumer `consumer-usage-detail-page.tsx` — exports request log
+- Export includes: date, service name, API key name, request count, cost
 
-- Add notifications for: access request approved/denied, service approved/rejected, merchant suspended, key revoked
-- Add notification preferences stub (TBD card) on consumer/merchant dashboards
+### 10.4 Admin Report Export
+
+- Add "Export CSV" button on `admin-governance-page.tsx` — exports audit logs
+- Add "Export CSV" button on `admin-usage-page.tsx` — exports platform usage
+- Add "Export CSV" button on `admin-usage-detail-page.tsx` — exports daily request log
+- Add "Export CSV" button on `admin-consumer-detail-page.tsx` — exports consumer's usage
+
+### 10.5 Comprehensive Audit Logging
+
+Ensure all action types in `AuditAction` are actually generated by handlers:
+
+**Already logged:**
+- `merchant.invited`, `merchant.registered`, `merchant.suspended`, `merchant.unsuspended`
+- `service.created`, `service.submitted`, `service.approved`, `service.rejected`, `service.updated`
+- `consumer.registered`, `consumer.blocked`, `consumer.unblocked`
+- `access.requested`, `access.approved`, `access.denied`
+- `apikey.created`, `apikey.revoked`
+- `invoice.issued`
+
+**New audit actions to add (from Phase 7-9 features):**
+- `merchant.approved`, `merchant.rejected`, `merchant.disabled`
+- `merchant.flagged`, `merchant.unflagged`
+- `merchant.subscriptions_blocked`, `merchant.subscriptions_unblocked`
+- `image.deprecated`, `image.disabled`
+- `consumer.service_blocked`, `consumer.service_unblocked`
+- `project.member_added`, `project.member_removed`, `project.member_role_changed`
+- `apikey.force_regenerated`
+
+Update `AuditAction` type, add to `admin-governance-page.tsx` filter options.
+
+### 10.6 Notification Enhancements
+
+- Ensure notifications fire for all Phase 7-9 events:
+  - Merchant approved/rejected → notification to merchant
+  - Access request approved/denied → notification to consumer
+  - Key revoked by admin → notification to consumer
+  - Consumer blocked for service → notification to consumer
+  - Member added to project → notification to member
 - Notifications link to relevant detail page when clicked
 
-**Spec:** `docs/specs/audit-observability-enhancements.md`
+**Spec:** `docs/specs/data-export-audit-enhancements.md`
 
 **AC themes:**
-- All key management actions appear in audit log
-- Project membership changes appear in audit log
-- Admin governance page filters work for new action types
-- Notifications fire on approval/rejection events
-- Notification click navigates to relevant page
+- CSV export downloads valid file with correct headers and data on all applicable pages
+- Export respects current filters and date range
+- PDF button shows honest prototype limitation toast
+- All new Phase 7-9 actions appear in audit log
+- Governance page filters include all new action types
+- Notifications fire on key governance events and link to detail pages
 
 ---
 
@@ -307,65 +398,72 @@ TRD v1 specifies: notifications on approval events and threshold alerts.
 
 The following TRD v1 requirements are **not feasible for a frontend prototype** and are documented here for future full-stack implementation.
 
-### System Architecture Layers (Backend)
+### System Architecture Layers
 
 | Layer | TRD v1 Requirement | Why Out of Scope |
 |-------|---------------------|------------------|
-| Identity Layer | External IdP (Microsoft Entra ID), JWKS endpoint validation, JWT processing | Requires real identity provider integration |
+| Identity Layer | External IdP (Microsoft Entra ID), JWKS endpoint validation, JWT processing | Requires real IdP integration |
 | API Gateway Layer | Azure API Management — programmatic API registration, policy enforcement, rate limiting, request/response tracing | Requires APIM infrastructure |
 | Consumption & Event Processing | Azure Event Hub / Kafka, fire-and-forget async streaming, background workers | Requires event streaming infrastructure |
-| Image Registry Layer | Azure Container Registry, scoped PAT tokens, registry abstraction interface | Requires container registry infrastructure |
+| Image Registry Layer | Azure Container Registry, scoped PAT tokens, registry abstraction interface (`ImageRegistryProvider`) | Requires container registry infrastructure |
 | Data Layer | Structured DB for metadata, keys, usage, licensing, audit | Requires database infrastructure |
 
-### Non-Functional Requirements (Backend)
+### Non-Functional Requirements
 
 | NFR | Description | Why Out of Scope |
 |-----|-------------|------------------|
-| **NFR1: Monitoring & Alerts** | Azure Application Insights integration, telemetry collection (API metrics, exceptions, dependency calls), distributed tracing with correlation IDs, alert configuration for error rates and latency | Requires backend services and cloud monitoring infrastructure |
-| **NFR2: Documentation Portal** | Public documentation portal with merchant/consumer onboarding guides, API examples, versioned docs aligned with releases | Requires separate documentation site; content authoring is a product decision |
-| **NFR3: Consumption Endpoint Performance** | Stateless ingestion layer, horizontal scaling, burst traffic handling, idempotent event handling, retry mechanisms, dead-letter queues for malformed events | Requires backend infrastructure and load testing |
+| **NFR1: Monitoring & Alerts** | Azure Application Insights — telemetry collection, distributed tracing with correlation IDs, alert configuration for error rates/latency, dependency tracking | Requires backend services + cloud monitoring |
+| **NFR2: Documentation Portal** | Public docs portal with onboarding guides, API examples, versioned docs aligned with releases | Requires separate docs site; content is a product decision |
+| **NFR3: Consumption Endpoint Performance** | Stateless ingestion, horizontal scaling, burst traffic handling, idempotent events, retry mechanisms, dead-letter queues | Requires backend infrastructure + load testing |
 
 ### Additional Backend-Only Items
 
 | Item | TRD v1 Reference | Description |
 |------|------------------|-------------|
-| APIM Policy Automation | FR2-MERCH-01 | Auto-register APIs in APIM, apply consumption tracking, logging, and rate-limiting policies programmatically |
-| Registry Abstraction Interface | FR2-MERCH-02 | `ImageRegistryProvider` interface (PushImage, ValidateImage, GeneratePullToken, GetImageMetadata, RevokeAccess) for vendor-agnostic registry |
+| APIM Policy Automation | FR2-MERCH-01 | Auto-register APIs in APIM, apply tracking/logging/throttling policies programmatically |
+| Registry Abstraction Interface | FR2-MERCH-02 | `ImageRegistryProvider` interface (PushImage, ValidateImage, GeneratePullToken, GetImageMetadata, RevokeAccess) |
 | Image Security Scanning | FR2-MERCH-02 | Automated security scans on pushed images |
 | Image Signature Verification | FR2-MERCH-02 | Cryptographic image signature validation |
-| Offline TTL License Tokens | FR3-CONS-05 | Signed JWT license tokens with expiry for air-gapped environments — requires crypto/signing backend |
+| Offline TTL License Tokens | FR3-CONS-05 | Signed JWT license tokens with expiry for air-gapped containers — requires crypto/signing backend |
 | Real-time Usage Streaming | FR2-MERCH-03 | High-throughput event ingestion with guaranteed delivery and deduplication |
-| CDN Integration | NFR1-PERF-001 | Content delivery network for static assets and API caching |
+| CDN Integration | NFR1-PERF-001 | Content delivery network for static assets |
 | Redis Caching | NFR1-PERF-001 | Cache layer for frequently accessed content |
 | CI/CD Pipelines | SDLC | Build, test, deploy automation |
 | Environment Management | SDLC | Test/staging/production environments and release triggers |
 
 ### SEO (Partially Out of Scope)
 
-TRD v1 specifies SEO-optimized marketplace pages with JSON-LD, OpenGraph metadata, and crawlable URLs. This is **partially feasible** but limited:
+TRD v1 specifies SEO-optimized marketplace pages with JSON-LD, OpenGraph metadata, and crawlable URLs.
 
-- **Feasible:** Friendly URL slugs (already using `/marketplace/:serviceId`), descriptive page titles
+- **Already done:** Clean URL slugs (`/marketplace/:serviceId`), descriptive headings
 - **Not feasible in SPA:** Server-side rendering for crawlers, dynamic meta tags for social sharing, structured data indexing — requires SSR (Next.js/Remix) or pre-rendering
-
-If SSR is adopted in a future stack migration, SEO can be added. For now, URLs are already clean.
+- **Recommendation:** Defer to stack migration if SSR is adopted
 
 ---
 
-## Spec Files Summary (v1 additions — 5 new specs)
+## Summary
+
+| Phase | Name | Key Deliverables | Est. Scope |
+|-------|------|-----------------|------------|
+| **7** | Lifecycle, Access Requests & Admin Controls | 4-state merchant lifecycle, consumer access request view, compliance controls, admin credential management | Large |
+| **8** | Docker Image Lifecycle & Licensing | Image status/licensing/TTL, merchant management, validation pipeline, consumer pull flow, per-service blocking | Large |
+| **9** | Projects & Teams Enhancement | 3-role RBAC, membership management, team-level API keys, project-scoped usage, admin team view | Medium |
+| **10** | Data Export & Audit Completeness | CSV export utility + buttons on all data pages, comprehensive audit logging, notification enhancements | Medium |
+
+---
+
+## Spec Files Summary (v1 — 4 new specs)
 
 | Phase | Spec File | FR Coverage |
 |-------|-----------|-------------|
 | 7 | lifecycle-governance-enhancements.md | FR4-ADMIN-01, FR4-ADMIN-02, FR3-CONS-02 |
-| 8 | projects-teams-rbac.md | FR3-CONS-04, FR3-CONS-03 |
-| 9 | image-licensing-enhancements.md | FR2-MERCH-02, FR2-MERCH-05, FR3-CONS-05 |
-| 10 | data-export-reporting.md | FR2-MERCH-04, FR3-CONS-03 |
-| 11 | audit-observability-enhancements.md | FR3-CONS-01, FR4-ADMIN-01, FR4-ADMIN-02 |
+| 8 | image-licensing-enhancements.md | FR2-MERCH-02, FR2-MERCH-05, FR3-CONS-05 |
+| 9 | projects-teams-rbac.md | FR3-CONS-04, FR3-CONS-03, FR4-ADMIN-02 |
+| 10 | data-export-audit-enhancements.md | FR2-MERCH-04, FR3-CONS-01, FR3-CONS-03 |
 
 ---
 
 ## Verification (per phase)
-
-Same gates as original plan:
 
 1. `npm run typecheck` — no TypeScript errors
 2. `npm run lint` — no ESLint warnings

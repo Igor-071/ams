@@ -44,13 +44,15 @@ export function AccessRequestButton({ service }: AccessRequestButtonProps) {
     if (!currentUser) return
     setLoading(true)
     await mockDelay()
-    createAccessRequest({
+    const result = createAccessRequest({
       consumerId: currentUser.id,
       consumerName: currentUser.name,
       serviceId: service.id,
       serviceName: service.name,
     })
-    setRequestStatus('pending')
+    if (result) {
+      setRequestStatus('pending')
+    }
     setLoading(false)
     setConfirmDialogOpen(false)
   }

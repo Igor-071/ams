@@ -12,6 +12,7 @@ import {
   ShieldIcon,
   ScrollTextIcon,
   ShoppingBagIcon,
+  InboxIcon,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -48,6 +49,7 @@ const consumerNav: NavItem[] = [
   { label: 'API Keys', href: ROUTES.CONSUMER_API_KEYS, icon: KeyIcon },
   { label: 'Usage', href: ROUTES.CONSUMER_USAGE, icon: BarChart3Icon },
   { label: 'Services', href: ROUTES.CONSUMER_SERVICES, icon: BoxIcon },
+  { label: 'Requests', href: ROUTES.CONSUMER_REQUESTS, icon: InboxIcon },
   { label: 'Images', href: ROUTES.CONSUMER_IMAGES, icon: ContainerIcon },
   { label: 'Projects', href: ROUTES.CONSUMER_PROJECTS, icon: FolderKanbanIcon },
 ]

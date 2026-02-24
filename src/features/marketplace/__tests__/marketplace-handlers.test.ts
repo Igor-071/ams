@@ -58,13 +58,14 @@ describe('Marketplace Mock Handlers', () => {
       serviceName: 'Test Service',
     })
 
-    expect(request.status).toBe('pending')
-    expect(request.consumerId).toBe('test-consumer')
-    expect(request.serviceId).toBe('svc-test')
-    expect(request.requestedAt).toBeDefined()
+    expect(request).not.toBeNull()
+    expect(request!.status).toBe('pending')
+    expect(request!.consumerId).toBe('test-consumer')
+    expect(request!.serviceId).toBe('svc-test')
+    expect(request!.requestedAt).toBeDefined()
 
     // Verify it can be found
     const found = getAccessRequestForService('test-consumer', 'svc-test')
-    expect(found?.id).toBe(request.id)
+    expect(found?.id).toBe(request!.id)
   })
 })

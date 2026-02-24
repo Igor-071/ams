@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router'
+import { ChevronDownIcon, AlertTriangleIcon } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header.tsx'
 import { StatusBadge } from '@/components/shared/status-badge.tsx'
 import { CopyButton } from '@/components/shared/copy-button.tsx'
@@ -25,11 +26,20 @@ import {
 import { getUsers, getMerchantProfile, createMerchantInvite } from '@/mocks/handlers.ts'
 import { ROUTES } from '@/lib/constants.ts'
 
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'active', label: 'Active' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'suspended', label: 'Suspended' },
+  { value: 'disabled', label: 'Disabled' },
+] as const
+
 export function AdminMerchantsPage() {
   const navigate = useNavigate()
   const [inviteOpen, setInviteOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteResult, setInviteResult] = useState<{ code: string; link: string } | null>(null)
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const merchants = useMemo(() => {
     const users = getUsers({ pageSize: 1000 }).data
@@ -41,9 +51,16 @@ export function AdminMerchantsPage() {
           ...u,
           companyName: profile?.companyName ?? '',
           invitedAt: profile?.invitedAt ?? '',
+          flaggedForReview: profile?.flaggedForReview ?? false,
+          subscriptionsBlocked: profile?.subscriptionsBlocked ?? false,
         }
       })
   }, [])
+
+  const filteredMerchants = useMemo(() => {
+    if (statusFilter === 'all') return merchants
+    return merchants.filter((m) => m.status === statusFilter)
+  }, [merchants, statusFilter])
 
   const handleInvite = () => {
     if (!inviteEmail.trim()) return
@@ -73,6 +90,24 @@ export function AdminMerchantsPage() {
         }
       />
 
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Filter by status"
+            className="h-10 appearance-none rounded-full border border-white/20 bg-card pl-4 pr-12 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDownIcon className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-white/[0.12]">
         <Table>
           <TableHeader>
@@ -84,13 +119,20 @@ export function AdminMerchantsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {merchants.map((m) => (
+            {filteredMerchants.map((m) => (
               <TableRow
                 key={m.id}
                 className="cursor-pointer"
                 onClick={() => navigate(ROUTES.ADMIN_MERCHANT_DETAIL(m.id))}
               >
-                <TableCell className="font-medium">{m.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {m.name}
+                    {m.flaggedForReview && (
+                      <AlertTriangleIcon className="h-4 w-4 text-amber-400" data-testid={`flagged-${m.id}`} />
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>{m.companyName}</TableCell>
                 <TableCell>
                   <StatusBadge status={m.status} />

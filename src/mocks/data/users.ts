@@ -74,6 +74,15 @@ export const mockUsers: User[] = hmrCache('__ams_users', () => [
     status: 'active',
     createdAt: '2025-03-20T00:00:00Z',
   },
+  {
+    id: 'user-merchant-pending',
+    email: 'merchant@pending.com',
+    name: 'Pending Pete',
+    roles: ['merchant'],
+    activeRole: 'merchant',
+    status: 'pending',
+    createdAt: '2025-05-10T00:00:00Z',
+  },
 ])
 
 export const mockMerchantProfiles: MerchantProfile[] = hmrCache('__ams_merchantProfiles', () => [
@@ -84,6 +93,8 @@ export const mockMerchantProfiles: MerchantProfile[] = hmrCache('__ams_merchantP
     website: 'https://acme-apis.com',
     inviteCode: 'INV-ACME-2025',
     invitedAt: '2025-02-01T00:00:00Z',
+    flaggedForReview: false,
+    subscriptionsBlocked: false,
   },
   {
     userId: 'user-merchant-2',
@@ -92,6 +103,8 @@ export const mockMerchantProfiles: MerchantProfile[] = hmrCache('__ams_merchantP
     website: 'https://dataflow.io',
     inviteCode: 'INV-DFLOW-2025',
     invitedAt: '2025-02-20T00:00:00Z',
+    flaggedForReview: false,
+    subscriptionsBlocked: false,
   },
   {
     userId: 'user-merchant-3',
@@ -99,6 +112,8 @@ export const mockMerchantProfiles: MerchantProfile[] = hmrCache('__ams_merchantP
     description: 'Previously active merchant',
     inviteCode: 'INV-SUSP-2025',
     invitedAt: '2025-03-01T00:00:00Z',
+    flaggedForReview: false,
+    subscriptionsBlocked: false,
   },
   {
     userId: 'user-dual-1',
@@ -107,6 +122,17 @@ export const mockMerchantProfiles: MerchantProfile[] = hmrCache('__ams_merchantP
     website: 'https://techco.com',
     inviteCode: 'INV-TECH-2025',
     invitedAt: '2025-03-10T00:00:00Z',
+    flaggedForReview: false,
+    subscriptionsBlocked: false,
+  },
+  {
+    userId: 'user-merchant-pending',
+    companyName: 'Pending Corp',
+    description: 'Awaiting onboarding approval',
+    inviteCode: 'INV-PEND-2025',
+    invitedAt: '2025-05-01T00:00:00Z',
+    flaggedForReview: false,
+    subscriptionsBlocked: false,
   },
 ])
 

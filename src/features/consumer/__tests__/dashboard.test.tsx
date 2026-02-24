@@ -79,14 +79,13 @@ describe('Consumer Dashboard Overview', () => {
     expect(usageLink).toHaveAttribute('href', '/dashboard/usage')
   })
 
-  // Pending requests card shown on dashboard
-  it('shows pending requests card with count', () => {
+  // My Requests card shown on dashboard
+  it('shows My Requests card with View All link', () => {
     renderWithRouter()
-    // user-consumer-1 has ar-3 pending for Sentiment Analysis API
-    expect(screen.getByText('Pending Requests')).toBeInTheDocument()
-    expect(screen.getByText('Sentiment Analysis API')).toBeInTheDocument()
-    // Badge with count "1"
-    expect(screen.getByText('1')).toBeInTheDocument()
+    // user-consumer-1 has access requests including Sentiment Analysis API
+    expect(screen.getByText('My Requests')).toBeInTheDocument()
+    const viewAllLink = screen.getByRole('link', { name: /View All/i })
+    expect(viewAllLink).toHaveAttribute('href', '/dashboard/requests')
   })
 
   it('renders Usage Activity chart', () => {

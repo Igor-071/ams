@@ -353,23 +353,35 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      {pendingRequests.length > 0 && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="font-heading text-lg font-light flex items-center gap-2">
-              <ClockIcon className="h-5 w-5 text-amber-400" />
-              Pending Requests
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="font-heading text-lg font-light flex items-center gap-2">
+            <ClockIcon className="h-5 w-5 text-amber-400" />
+            My Requests
+            {allRequests.length > 0 && (
               <Badge
                 variant="secondary"
                 className="bg-amber-500/15 text-amber-400 text-xs ml-1"
               >
-                {pendingRequests.length}
+                {allRequests.length}
               </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            )}
+          </CardTitle>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="rounded-full"
+          >
+            <Link to={ROUTES.CONSUMER_REQUESTS}>View All</Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {allRequests.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No access requests yet</p>
+          ) : (
             <div className="space-y-3">
-              {pendingRequests.map((req) => (
+              {allRequests.slice(0, 3).map((req) => (
                 <div
                   key={req.id}
                   className="flex items-center justify-between rounded-lg border border-white/[0.12] p-3"
@@ -382,22 +394,15 @@ export function DashboardPage() {
                       Requested {new Date(req.requestedAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-full"
-                  >
-                    <Link to={ROUTES.MARKETPLACE_SERVICE(req.serviceId)}>
-                      View
-                    </Link>
-                  </Button>
+                  <StatusBadge
+                    status={req.status === 'approved' ? 'active' : req.status === 'denied' ? 'rejected' : 'pending'}
+                  />
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

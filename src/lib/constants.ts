@@ -18,6 +18,7 @@ export const ROUTES = {
   CONSUMER_USAGE_DETAIL: (date: string) => `/dashboard/usage/${date}` as const,
   CONSUMER_SERVICES: '/dashboard/services',
   CONSUMER_SERVICE_DETAIL: (id: string) => `/dashboard/services/${id}` as const,
+  CONSUMER_REQUESTS: '/dashboard/requests',
   CONSUMER_IMAGES: '/dashboard/images',
   CONSUMER_PROJECTS: '/dashboard/projects',
   CONSUMER_PROJECT_DETAIL: (id: string) => `/dashboard/projects/${id}` as const,

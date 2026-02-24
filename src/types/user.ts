@@ -1,6 +1,6 @@
 export type Role = 'admin' | 'merchant' | 'consumer'
 
-export type UserStatus = 'active' | 'suspended' | 'blocked'
+export type UserStatus = 'active' | 'pending' | 'suspended' | 'blocked' | 'disabled'
 
 export interface User {
   id: string
@@ -20,6 +20,8 @@ export interface MerchantProfile {
   website?: string
   inviteCode: string
   invitedAt: string
+  flaggedForReview?: boolean
+  subscriptionsBlocked?: boolean
 }
 
 export interface ConsumerProfile {
