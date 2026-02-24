@@ -1,6 +1,6 @@
 import type { FilterParams, PaginatedResponse } from '@/types/common.ts'
 import type { User, MerchantProfile, ConsumerProfile } from '@/types/user.ts'
-import type { Service, AccessRequest } from '@/types/service.ts'
+import type { Service, ServiceMetrics, AccessRequest } from '@/types/service.ts'
 import type { ApiKey } from '@/types/api-key.ts'
 import type { UsageRecord, DailyUsage } from '@/types/usage.ts'
 import type { Invoice } from '@/types/invoice.ts'
@@ -99,6 +99,48 @@ export function getServicesByMerchant(
   items = filterBySearch(items, params?.search, ['name'])
   if (params?.status) items = items.filter((s) => s.status === params.status)
   return paginate(items, params?.page, params?.pageSize)
+}
+
+// Service Metrics (computed from usage records + access requests)
+const uptimeMap: Record<string, number> = {
+  'svc-1': 99.95,
+  'svc-2': 99.9,
+  'svc-3': 99.8,
+  'svc-4': 99.7,
+  'svc-5': 0,
+  'svc-6': 0,
+  'svc-7': 98.5,
+}
+
+export function getServiceMetrics(serviceId: string): ServiceMetrics {
+  const records = mockUsageRecords.filter((u) => u.serviceId === serviceId)
+  const totalRequests = records.length
+  const successCount = records.filter((r) => r.statusCode >= 200 && r.statusCode < 400).length
+  const avgResponseTimeMs =
+    totalRequests > 0
+      ? Math.round(records.reduce((sum, r) => sum + r.responseTimeMs, 0) / totalRequests)
+      : 0
+  const activeConsumers = new Set(
+    mockAccessRequests
+      .filter((r) => r.serviceId === serviceId && r.status === 'approved')
+      .map((r) => r.consumerId),
+  ).size
+  const uptimePercent = uptimeMap[serviceId] ?? 99.9
+  const successRate = totalRequests > 0 ? successCount / totalRequests : 1
+
+  return { totalRequests, activeConsumers, avgResponseTimeMs, uptimePercent, successRate }
+}
+
+export function getServiceConsumerCount(serviceId: string): number {
+  return new Set(
+    mockAccessRequests
+      .filter((r) => r.serviceId === serviceId && r.status === 'approved')
+      .map((r) => r.consumerId),
+  ).size
+}
+
+export function getMerchantServiceCount(merchantId: string): number {
+  return mockServices.filter((s) => s.merchantId === merchantId && s.status === 'active').length
 }
 
 // Access Requests

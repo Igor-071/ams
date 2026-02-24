@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { CloudIcon, ContainerIcon, LockIcon } from 'lucide-react'
+import { CloudIcon, ContainerIcon, LockIcon, UsersIcon } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card.tsx'
 import { Badge } from '@/components/ui/badge.tsx'
 import { ROUTES } from '@/lib/constants.ts'
@@ -35,11 +35,13 @@ const typeConfig = {
 
 interface ServiceCardProps {
   service: Service
+  consumerCount: number
 }
 
-export function ServiceCard({ service }: ServiceCardProps) {
+export function ServiceCard({ service, consumerCount }: ServiceCardProps) {
   const config = typeConfig[service.type]
   const TypeIcon = config.icon
+  const hasFreeTier = service.pricing.freeTier != null && service.pricing.freeTier > 0
 
   return (
     <Link to={ROUTES.MARKETPLACE_SERVICE(service.id)} data-testid={`service-card-${service.id}`}>
@@ -70,9 +72,18 @@ export function ServiceCard({ service }: ServiceCardProps) {
             {service.description}
           </p>
 
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">{service.category}</span>
+          <div className="flex items-center justify-end text-xs">
             <span className="font-medium text-foreground">{formatPricing(service)}</span>
+          </div>
+
+          <div className="flex items-center gap-3 text-xs text-muted-foreground border-t border-white/[0.06] pt-2">
+            <span className="flex items-center gap-1">
+              <UsersIcon className="h-3 w-3" />
+              {consumerCount} {consumerCount === 1 ? 'consumer' : 'consumers'}
+            </span>
+            {hasFreeTier && (
+              <span className="text-emerald-400">Free tier</span>
+            )}
           </div>
         </CardContent>
       </Card>

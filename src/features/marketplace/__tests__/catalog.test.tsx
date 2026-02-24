@@ -173,4 +173,20 @@ describe('Marketplace Catalog', () => {
       expect(screen.getByText('Service Detail')).toBeInTheDocument()
     })
   })
+
+  // Card enrichments: consumer count, free tier
+  it('shows consumer count on service cards', () => {
+    renderCatalog()
+
+    // svc-1 Weather API has 2 approved consumers (ar-1 and ar-4)
+    expect(screen.getByText('2 consumers')).toBeInTheDocument()
+  })
+
+  it('shows free tier indicator when pricing has free tier', () => {
+    renderCatalog()
+
+    // svc-1 has freeTier: 1000, svc-2 has freeTier: 500
+    const freeTierLabels = screen.getAllByText('Free tier')
+    expect(freeTierLabels.length).toBeGreaterThanOrEqual(2)
+  })
 })

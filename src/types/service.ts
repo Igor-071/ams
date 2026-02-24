@@ -29,6 +29,19 @@ export interface ServiceEndpointConfig {
   timeout?: number
 }
 
+export interface ServiceMetrics {
+  totalRequests: number
+  activeConsumers: number
+  avgResponseTimeMs: number
+  uptimePercent: number
+  successRate: number
+}
+
+export interface QuickStartSnippet {
+  language: string
+  code: string
+}
+
 export interface Service {
   id: string
   merchantId: string
@@ -46,6 +59,12 @@ export interface Service {
   tags: string[]
   createdAt: string
   updatedAt: string
+  version?: string
+  longDescription?: string
+  features?: string[]
+  quickStart?: QuickStartSnippet
+  responseFormat?: string
+  authMethod?: string
 }
 
 export interface AccessRequest {

@@ -37,9 +37,10 @@ describe('Service Detail Page', () => {
     renderServiceDetail('svc-1')
 
     expect(screen.getByRole('heading', { name: 'Weather API' })).toBeInTheDocument()
-    expect(screen.getByText(/real-time weather data/i)).toBeInTheDocument()
+    // longDescription is shown in Overview — check for content from it
+    expect(screen.getByText(/comprehensive weather data/i)).toBeInTheDocument()
     expect(screen.getByText('API')).toBeInTheDocument()
-    expect(screen.getByText(/ACME APIs/)).toBeInTheDocument()
+    expect(screen.getAllByText(/ACME APIs/).length).toBeGreaterThan(0)
     expect(screen.getByText('Data')).toBeInTheDocument()
     // Tags
     expect(screen.getByText('weather')).toBeInTheDocument()
@@ -135,5 +136,68 @@ describe('Service Detail Page', () => {
     expect(screen.getByRole('heading', { name: 'Sentiment Analysis API' })).toBeInTheDocument()
     expect(screen.getByText('Private')).toBeInTheDocument()
     expect(screen.getByText('This service is not listed in the marketplace catalog')).toBeInTheDocument()
+  })
+
+  // --- New tests for enriched detail page ---
+
+  it('shows version badge in header', () => {
+    renderServiceDetail('svc-1')
+
+    expect(screen.getByText('v2.4.1')).toBeInTheDocument()
+  })
+
+  it('renders overview with long description', () => {
+    renderServiceDetail('svc-1')
+
+    // CardTitle renders as div, use getByText
+    expect(screen.getByText('Overview')).toBeInTheDocument()
+    expect(screen.getByText(/comprehensive weather data/i)).toBeInTheDocument()
+  })
+
+  it('renders features list', () => {
+    renderServiceDetail('svc-1')
+
+    expect(screen.getByText('Features')).toBeInTheDocument()
+    expect(screen.getByText(/48-hour hourly/i)).toBeInTheDocument()
+    expect(screen.getByText(/Air quality index/i)).toBeInTheDocument()
+  })
+
+  it('renders technical details with base URL, auth, and response format', () => {
+    renderServiceDetail('svc-1')
+
+    expect(screen.getByText('Technical Details')).toBeInTheDocument()
+    expect(screen.getByText('Base URL')).toBeInTheDocument()
+    expect(screen.getByText('Response Format')).toBeInTheDocument()
+    expect(screen.getByText('JSON')).toBeInTheDocument()
+    expect(screen.getByText('Authentication')).toBeInTheDocument()
+    expect(screen.getByText(/X-API-Key header/)).toBeInTheDocument()
+  })
+
+  it('renders quick start code block', () => {
+    renderServiceDetail('svc-1')
+
+    expect(screen.getByText('Quick Start')).toBeInTheDocument()
+    expect(screen.getByText('curl')).toBeInTheDocument()
+    // URL appears in both Base URL and code block — use getAllByText
+    expect(screen.getAllByText(/api\.acme\.com\/weather/).length).toBeGreaterThan(0)
+  })
+
+  it('renders provider card in sidebar', () => {
+    renderServiceDetail('svc-1')
+
+    expect(screen.getByText('Provider')).toBeInTheDocument()
+    // ACME APIs has 2 active services (svc-1 and svc-2; svc-6 is draft)
+    expect(screen.getByText(/2 active services/)).toBeInTheDocument()
+  })
+
+  it('shows Docker-specific details for Docker services', () => {
+    renderServiceDetail('svc-3')
+
+    expect(screen.getByText('Images')).toBeInTheDocument()
+    expect(screen.getByText('2 available')).toBeInTheDocument()
+    expect(screen.getByText('Latest Tag')).toBeInTheDocument()
+    expect(screen.getByText('latest')).toBeInTheDocument()
+    expect(screen.getByText('License')).toBeInTheDocument()
+    expect(screen.getByText('Apache-2.0')).toBeInTheDocument()
   })
 })
